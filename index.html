@@ -1,0 +1,2078 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ARzonePS — Live Billing Monitor</title>
+  
+  <!-- Mobile & PWA App Support -->
+  <meta name="theme-color" content="#07090e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ARzonePS">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="logo.png">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Firebase SDK (v9 Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+  <style>
+    /* ================================================================
+       1. DESIGN TOKENS & RESET
+       ================================================================ */
+    :root {
+      --bg: #07090e;
+      --bg-card: rgba(15, 20, 32, 0.90);
+      --bg-card-hover: rgba(20, 27, 44, 0.98);
+      --surf-elevated: #131926;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(0, 210, 255, 0.35);
+      
+      --text: #f8fafc;
+      --text-muted: #8492a6;
+      --text-sub: #4c566a;
+
+      /* Brand Neons */
+      --neon-cyan: #00d2ff;
+      --neon-blue: #3b82f6;
+      --neon-red: #ff2a5f;
+      --neon-green: #00ff88;
+      --neon-purple: #a855f7;
+      --neon-amber: #f59e0b;
+
+      /* PlayStation Shapes */
+      --ps-tri: #00e676;
+      --ps-cir: #ff3366;
+      --ps-sqr: #ff66cc;
+      --ps-xbt: #3399ff;
+
+      --font-main: 'Plus Jakarta Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 15% 20%, rgba(0, 210, 255, 0.06) 0%, transparent 40%),
+        radial-gradient(circle at 85% 80%, rgba(255, 42, 95, 0.06) 0%, transparent 40%),
+        linear-gradient(to bottom, rgba(7, 9, 14, 0.96), var(--bg));
+      background-attachment: fixed;
+    }
+
+    /* Ambient Glow */
+    .ambient-glow {
+      position: fixed;
+      pointer-events: none;
+      border-radius: 50%;
+      filter: blur(90px);
+      z-index: 0;
+      opacity: 0.15;
+    }
+    .glow-cyan { top: -120px; left: -120px; width: 450px; height: 450px; background: var(--neon-cyan); }
+    .glow-red  { bottom: -120px; right: -120px; width: 500px; height: 500px; background: var(--neon-red); }
+
+    /* ================================================================
+       2. HEADER
+       ================================================================ */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(7, 9, 14, 0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+    }
+
+    .header-inner {
+      max-width: 1750px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .brand-logo-frame {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #000;
+      border: 1px solid rgba(0, 210, 255, 0.5);
+      box-shadow: 0 0 20px rgba(0, 210, 255, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .brand-logo-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .brand-text h1 {
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      line-height: 1.1;
+      background: linear-gradient(135deg, #ffffff 40%, var(--neon-cyan) 85%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .brand-text h1 span.zone {
+      background: linear-gradient(135deg, var(--neon-cyan), var(--neon-blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-text h1 span.ps {
+      background: linear-gradient(135deg, var(--neon-red), #ff6b8b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-left: 1px;
+    }
+
+    .brand-sub {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--text-muted);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 2px;
+    }
+
+    .ps-icons-mini {
+      display: inline-flex;
+      gap: 4px;
+      font-size: 9px;
+    }
+    .ps-icons-mini span:nth-child(1) { color: var(--ps-tri); }
+    .ps-icons-mini span:nth-child(2) { color: var(--ps-cir); }
+    .ps-icons-mini span:nth-child(3) { color: var(--ps-xbt); }
+    .ps-icons-mini span:nth-child(4) { color: var(--ps-sqr); }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+    }
+
+    .status-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--text-sub);
+    }
+    .status-dot.online {
+      background: var(--neon-green);
+      box-shadow: 0 0 12px var(--neon-green);
+      animation: pulseDot 2s infinite;
+    }
+    .status-dot.offline {
+      background: var(--neon-red);
+      box-shadow: 0 0 12px var(--neon-red);
+    }
+
+    .live-clock-badge {
+      font-family: var(--font-mono);
+      font-size: 16px;
+      font-weight: 900;
+      color: #fff;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 6px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      letter-spacing: 1px;
+    }
+
+    /* Tombol DANA di Header */
+    .dana-header-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: linear-gradient(135deg, #118EEA 0%, #0077c5 100%);
+      border: 1px solid rgba(0, 210, 255, 0.45);
+      color: #fff;
+      font-family: var(--font-main);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      padding: 7px 15px;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 0 16px rgba(17, 142, 234, 0.35);
+      transition: all 0.2s ease;
+    }
+    .dana-header-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 24px rgba(17, 142, 234, 0.65);
+      background: linear-gradient(135deg, #1898f5 0%, #0c84db 100%);
+    }
+    .dana-header-btn svg {
+      flex-shrink: 0;
+    }
+
+    /* Modal Popup QR DANA */
+    .qr-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(4, 7, 13, 0.82);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      animation: qrFadeIn 0.2s ease-out;
+    }
+    .qr-modal-backdrop.open {
+      display: flex;
+    }
+    @keyframes qrFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .qr-modal-card {
+      position: relative;
+      background: #0d121f;
+      border: 1px solid rgba(17, 142, 234, 0.45);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85), 0 0 40px rgba(17, 142, 234, 0.25);
+      border-radius: 24px;
+      max-width: 420px;
+      width: 100%;
+      padding: 28px 24px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 16px;
+      animation: qrZoomIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes qrZoomIn {
+      from { transform: scale(0.92); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .qr-modal-close {
+      position: absolute;
+      top: 14px;
+      right: 16px;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: #cbd5e1;
+      font-size: 22px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .qr-modal-close:hover {
+      background: rgba(255, 42, 95, 0.25);
+      color: #ff2a5f;
+      border-color: rgba(255, 42, 95, 0.5);
+    }
+
+    .dana-brand-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(17, 142, 234, 0.14);
+      border: 1px solid rgba(17, 142, 234, 0.4);
+      padding: 6px 14px;
+      border-radius: 20px;
+      color: #38bdf8;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 1.2px;
+    }
+
+    .qr-modal-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+
+    .qr-frame {
+      background: #ffffff;
+      padding: 14px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 24px rgba(17, 142, 234, 0.3);
+      border: 2px solid rgba(17, 142, 234, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      max-width: 270px;
+      width: 100%;
+    }
+
+    .dana-qr-img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 12px;
+      image-rendering: -webkit-optimize-contrast;
+    }
+
+    .qr-info-footer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .dana-acc-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 7px 18px;
+      border-radius: 30px;
+    }
+    .dana-num-label {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+    }
+    .dana-num-val {
+      font-family: var(--font-main);
+      font-size: 16px;
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: 1.2px;
+    }
+    .dana-owner-tag {
+      font-size: 12px;
+      font-weight: 800;
+      color: #38bdf8;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .config-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      transition: all 0.2s;
+    }
+    .config-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    /* ================================================================
+       3. MAIN CONTAINER
+       ================================================================ */
+    main {
+      position: relative;
+      z-index: 10;
+      max-width: 1750px;
+      margin: 0 auto;
+      padding: 16px 20px 10px;
+    }
+
+    /* Single Focus Banner (?unit=) */
+    .single-unit-banner {
+      display: none;
+      background: linear-gradient(90deg, rgba(0, 210, 255, 0.1), rgba(255, 42, 95, 0.1));
+      border: 1px solid var(--border-accent);
+      border-radius: 18px;
+      padding: 16px 24px;
+      margin-bottom: 24px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .sub-text-title {
+      font-size: 15px;
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: 1px;
+    }
+    .sub-text-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .all-units-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border);
+      color: #fff;
+      font-family: var(--font-main);
+      font-size: 12px;
+      font-weight: 800;
+      padding: 10px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .all-units-btn:hover {
+      background: rgba(255, 255, 255, 0.16);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    /* ================================================================
+       4. STATION CARDS GRID (TV Widescreen & Landscape Optimized)
+       ================================================================ */
+    /* ================================================================
+       4. STATION CARDS (Flex Centered Layout - 5 Atas, 4 Bawah Center)
+       ================================================================ */
+    .station-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: stretch;
+      gap: 20px;
+      width: 100%;
+    }
+
+    /* Focused single view */
+    .station-grid.single-focus {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 60vh;
+    }
+    .station-grid.single-focus .station-card {
+      width: 100%;
+      max-width: 650px;
+      flex: 0 0 100%;
+    }
+
+    /* Card Styling - BESAR, BOLD & MANTAP */
+    .station-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: relative;
+      overflow: hidden;
+      min-height: 330px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+      
+      /* Mobile default: 1 kolom penuh di tengah */
+      flex: 0 0 100%;
+      max-width: 480px;
+    }
+
+    .station-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255, 255, 255, 0.18);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    /* Tablet & Layar Menengah: 3 Kolom Centered (3 x 3) */
+    @media (min-width: 768px) and (max-width: 1399px) {
+      .station-card {
+        flex: 0 0 calc((100% - (2 * 18px)) / 3.02);
+        max-width: none;
+        min-width: 250px;
+      }
+    }
+
+    /* Layar TV & Widescreen 1080p/4K (min-width: 1400px):
+       Muat 5 Kolom di atas, dan 4 kartu di bawah duduk persis di TENGAH (Centered)! */
+    @media (min-width: 1400px) {
+      .station-grid {
+        gap: 20px;
+      }
+      .station-card {
+        flex: 0 0 calc((100% - (4 * 20px)) / 5.02);
+        max-width: 350px;
+        min-width: 270px;
+        padding: 22px 18px;
+        min-height: 330px;
+        gap: 14px;
+      }
+      .station-number-badge {
+        width: 46px;
+        height: 46px;
+        font-size: 19px;
+      }
+      .station-name-wrap h3 {
+        font-size: 19px;
+      }
+      .timer-digits {
+        font-size: 34px;
+      }
+      .billing-amount {
+        font-size: 19px;
+        white-space: nowrap;
+      }
+      .billing-label {
+        font-size: 9.5px;
+      }
+      .card-idle-display {
+        padding: 22px 14px;
+        gap: 8px;
+      }
+      .idle-ps-symbols {
+        font-size: 20px;
+        gap: 10px;
+      }
+      .idle-title {
+        font-size: 20px;
+      }
+    }
+
+    /* Card Accent Top Line */
+    .station-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--text-sub);
+    }
+    .station-card.running::before {
+      background: linear-gradient(90deg, var(--neon-cyan), var(--neon-blue));
+    }
+    .station-card.running.paket::before {
+      background: linear-gradient(90deg, var(--neon-purple), #c084fc);
+    }
+    .station-card.timeup::before {
+      background: var(--neon-red);
+      animation: alertBlink 1s infinite;
+    }
+    .station-card.idle::before {
+      background: var(--neon-green);
+      opacity: 0.7;
+    }
+
+    @keyframes alertBlink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.2; }
+    }
+
+    /* Card Top Identity */
+    .card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Station Identity */
+    .station-identity {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .station-number-badge {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 18px;
+      font-weight: 900;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .station-card.running .station-number-badge {
+      border-color: rgba(0, 210, 255, 0.4);
+      background: rgba(0, 210, 255, 0.08);
+      color: var(--neon-cyan);
+    }
+    .station-card.running.paket .station-number-badge {
+      border-color: rgba(168, 85, 247, 0.4);
+      background: rgba(168, 85, 247, 0.08);
+      color: #d8b4fe;
+    }
+
+    .station-name-wrap {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .station-name-wrap h3 {
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .station-sub-badge {
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .session-mode-badge {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .mode-idle {
+      background: rgba(0, 255, 136, 0.12);
+      color: var(--neon-green);
+      border: 1px solid rgba(0, 255, 136, 0.35);
+    }
+    .mode-bebas {
+      background: rgba(0, 210, 255, 0.12);
+      color: var(--neon-cyan);
+      border: 1px solid rgba(0, 210, 255, 0.35);
+    }
+    .mode-paket {
+      background: rgba(168, 85, 247, 0.14);
+      color: #d8b4fe;
+      border: 1px solid rgba(168, 85, 247, 0.35);
+    }
+    .mode-timeup {
+      background: rgba(255, 42, 95, 0.16);
+      color: var(--neon-red);
+      border: 1px solid rgba(255, 42, 95, 0.45);
+      animation: alertBlink 1s infinite;
+    }
+
+    /* ================================================================
+       BODY TAMPILAN STANDBY (IDLE) - TIDAK ADA TARIF PER JAM
+       ================================================================ */
+    .card-idle-display {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px dashed rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      padding: 30px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 12px;
+      flex: 1;
+    }
+
+    .idle-ps-symbols {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 24px;
+    }
+    .idle-ps-symbols .ps-tri { color: var(--ps-tri); text-shadow: 0 0 15px var(--ps-tri); }
+    .idle-ps-symbols .ps-cir { color: var(--ps-cir); text-shadow: 0 0 15px var(--ps-cir); }
+    .idle-ps-symbols .ps-xbt { color: var(--ps-xbt); text-shadow: 0 0 15px var(--ps-xbt); }
+    .idle-ps-symbols .ps-sqr { color: var(--ps-sqr); text-shadow: 0 0 15px var(--ps-sqr); }
+
+    .idle-title {
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      color: var(--neon-green);
+      text-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+    }
+
+    .idle-desc {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+    }
+
+    .card-idle-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 14px;
+    }
+    .idle-bottom-txt {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+    }
+    .idle-ready-pill {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      padding: 5px 14px;
+      border-radius: 20px;
+      background: rgba(0, 255, 136, 0.1);
+      color: var(--neon-green);
+      border: 1px solid rgba(0, 255, 136, 0.25);
+    }
+
+    /* ================================================================
+       BODY TAMPILAN AKTIF (RUNNING) - MUNCUL SAAT MULAI SESI
+       ================================================================ */
+    .card-running-display {
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+      flex: 1;
+    }
+
+    .timer-screen {
+      background: rgba(0, 0, 0, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 16px 14px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .timer-label {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .timer-digits {
+      font-family: var(--font-mono);
+      font-size: 36px;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      color: #fff;
+      line-height: 1.1;
+    }
+
+    .station-card.running .timer-digits {
+      color: var(--neon-cyan);
+      text-shadow: 0 0 30px rgba(0, 210, 255, 0.4);
+    }
+    .station-card.running.paket .timer-digits {
+      color: #d8b4fe;
+      text-shadow: 0 0 30px rgba(168, 85, 247, 0.4);
+    }
+    .station-card.timeup .timer-digits {
+      color: var(--neon-red);
+      text-shadow: 0 0 30px rgba(255, 42, 95, 0.6);
+    }
+
+    /* ── PERBEDAAN WARNA JELAS: SUDAH BAYAR (LUNAS) vs BELUM BAYAR ── */
+
+    /* SUDAH BAYAR (LUNAS) — Tema Hijau Neon Emerald Segar & Bersih */
+    .station-card.running.is-paid {
+      border-color: rgba(0, 255, 136, 0.38);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), 0 0 25px rgba(0, 255, 136, 0.15);
+    }
+    .station-card.running.is-paid::before {
+      background: linear-gradient(90deg, #00ff88, #00d2ff);
+    }
+    .station-card.running.is-paid .station-number-badge {
+      border-color: rgba(0, 255, 136, 0.5);
+      background: rgba(0, 255, 136, 0.12);
+      color: var(--neon-green);
+    }
+    .station-card.running.is-paid .timer-digits {
+      color: #86efac;
+      text-shadow: 0 0 25px rgba(0, 255, 136, 0.4);
+    }
+    .station-card.running.is-paid .billing-amount {
+      color: var(--neon-green);
+    }
+
+    /* BELUM BAYAR (PAKET) — Tema Peringatan Amber / Kuning Emas */
+    .station-card.running.paket.is-unpaid {
+      border-color: rgba(245, 158, 11, 0.4);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), 0 0 25px rgba(245, 158, 11, 0.15);
+    }
+    .station-card.running.paket.is-unpaid::before {
+      background: linear-gradient(90deg, var(--neon-purple), var(--neon-amber));
+    }
+    .station-card.running.paket.is-unpaid .station-number-badge {
+      border-color: rgba(245, 158, 11, 0.5);
+      background: rgba(245, 158, 11, 0.12);
+      color: var(--neon-amber);
+    }
+    .station-card.running.paket.is-unpaid .timer-digits {
+      color: #fde047;
+      text-shadow: 0 0 25px rgba(245, 158, 11, 0.4);
+    }
+    .station-card.running.paket.is-unpaid .billing-amount {
+      color: #fbbf24;
+    }
+
+    .billing-screen {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      gap: 8px;
+    }
+
+    .billing-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .billing-label {
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .billing-amount {
+      font-family: var(--font-mono);
+      font-size: 19px;
+      font-weight: 900;
+      color: #fff;
+      white-space: nowrap;
+      line-height: 1.2;
+    }
+
+    .pay-status-pill {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      white-space: nowrap;
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .pay-lunas {
+      background: rgba(0, 255, 136, 0.22);
+      color: var(--neon-green);
+      border: 1px solid rgba(0, 255, 136, 0.6);
+      box-shadow: 0 0 16px rgba(0, 255, 136, 0.35);
+    }
+    .pay-belum {
+      background: rgba(245, 158, 11, 0.22);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.6);
+      box-shadow: 0 0 16px rgba(245, 158, 11, 0.25);
+    }
+
+    /* Badge Biaya Tambahan (>3 Pemain / Stik Tambahan) */
+    .card-extra-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #fbbf24;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.4px;
+      align-self: center;
+      text-transform: uppercase;
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.2);
+      max-width: 95%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-console-pill {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 900;
+      padding: 1px 7px;
+      border-radius: 6px;
+      background: rgba(139, 92, 246, 0.25);
+      border: 1px solid rgba(167, 139, 250, 0.5);
+      color: #c4b5fd;
+      vertical-align: middle;
+      margin-left: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    .meta-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      font-size: 13px;
+      color: var(--text-muted);
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .meta-item span:first-child {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--text-sub);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .meta-item span:last-child {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 800;
+      color: #cbd5e1;
+    }
+
+    /* Modal Config */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-box {
+      background: #0f1420;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      max-width: 440px;
+      width: 100%;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .modal-header h3 { font-size: 16px; font-weight: 800; color: #fff; }
+    .modal-close { background: none; border: none; color: var(--text-muted); font-size: 18px; cursor: pointer; }
+    .input-group { display: flex; flex-direction: column; gap: 6px; }
+    .input-group label { font-size: 11px; font-weight: 700; color: var(--text-muted); }
+    .input-group input {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 10px 14px;
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      outline: none;
+    }
+    .modal-actions { display: flex; gap: 10px; margin-top: 6px; }
+    .btn-primary {
+      flex: 1;
+      background: linear-gradient(135deg, var(--neon-cyan), var(--neon-blue));
+      border: none;
+      color: #fff;
+      font-family: var(--font-main);
+      font-size: 12px;
+      font-weight: 800;
+      padding: 12px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border);
+      color: #fff;
+      font-family: var(--font-main);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 12px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    /* Fullscreen TV Adjustments */
+    :fullscreen header, :-webkit-full-screen header { padding: 10px 30px; }
+    :fullscreen main, :-webkit-full-screen main { padding-top: 14px; }
+
+    /* ================================================================
+       FOOTER & BANTUAN WA
+       ================================================================ */
+    .main-footer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 6px 20px 16px;
+      text-align: center;
+      position: relative;
+      z-index: 10;
+    }
+
+    .footer-help-banner {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(15, 20, 32, 0.90);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(37, 211, 102, 0.4);
+      box-shadow: 0 4px 20px rgba(37, 211, 102, 0.15), 0 0 24px rgba(0, 0, 0, 0.5);
+      border-radius: 50px;
+      padding: 6px 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .footer-help-banner:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(37, 211, 102, 0.25);
+    }
+
+    .footer-help-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: rgba(37, 211, 102, 0.15);
+      border: 1px solid rgba(37, 211, 102, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #25d366;
+      box-shadow: 0 0 16px rgba(37, 211, 102, 0.35);
+      flex-shrink: 0;
+    }
+
+    .footer-help-text {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .f-help-title {
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      color: #e2e8f0;
+      text-transform: uppercase;
+    }
+
+    .f-wa-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: #25d366;
+      color: #07090e;
+      font-family: var(--font-main);
+      font-size: 15px;
+      font-weight: 800;
+      padding: 8px 22px;
+      border-radius: 30px;
+      text-decoration: none;
+      box-shadow: 0 0 18px rgba(37, 211, 102, 0.45);
+      transition: all 0.2s;
+    }
+    .f-wa-btn strong {
+      font-family: var(--font-main);
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: 1.2px;
+    }
+    .f-wa-btn:hover {
+      transform: scale(1.05);
+      background: #2bf275;
+      box-shadow: 0 0 25px rgba(37, 211, 102, 0.7);
+    }
+
+    .footer-copyright {
+      font-size: 11px;
+      color: var(--text-sub);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    @media (max-width: 650px) {
+      .footer-help-banner {
+        border-radius: 20px;
+        padding: 14px 18px;
+        flex-direction: column;
+        text-align: center;
+      }
+      .footer-help-text {
+        flex-direction: column;
+        gap: 8px;
+      }
+    }
+
+    #live-toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(50px);
+      background: rgba(15, 20, 32, 0.95);
+      border: 1px solid var(--border-accent);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 800;
+      z-index: 9999;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s;
+    }
+    #live-toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    @media (max-width: 768px) {
+      .header-inner { padding: 0 4px; }
+      .brand-text h1 { font-size: 18px; }
+      .station-grid { grid-template-columns: 1fr; }
+      .timer-digits { font-size: 34px; }
+      .billing-amount { font-size: 24px; }
+      .stats-pills { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient Glow -->
+  <div class="ambient-glow glow-cyan"></div>
+  <div class="ambient-glow glow-red"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="header-inner">
+      <a href="index.html" class="brand-wrap">
+        <div class="brand-logo-frame">
+          <img src="logo.png" alt="ARzonePS Logo" onerror="this.src='logo.jpg'">
+        </div>
+        <div class="brand-text">
+          <h1>AR<span class="zone">zone</span><span class="ps">PS</span></h1>
+          <div class="brand-sub">
+            RENTAL PLAYSTATION
+            <div class="ps-icons-mini">
+              <span>▲</span><span>●</span><span>✖</span><span>■</span>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <div class="header-right">
+        <button class="dana-header-btn" id="open-dana-btn" title="QR DANA Cashless">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+            <path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm8-2h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm13-2h3v3h-3v-3zm-5 0h3v3h-3v-3zm2 5h3v3h-3v-3zm3 0h3v3h-3v-3zm-5-2h3v2h-3v-2zm7 0h1v2h-1v-2z"/>
+          </svg>
+          <span>QR DANA</span>
+        </button>
+        <div class="status-pill">
+          <div class="status-dot" id="net-dot"></div>
+          <span id="net-text">CONNECTING</span>
+        </div>
+        <div class="live-clock-badge" id="live-clock">00:00:00</div>
+        <button class="config-btn" id="fullscreen-btn" title="Layar Penuh (TV Mode)">
+          <svg id="fs-icon-enter" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+          </svg>
+          <svg id="fs-icon-exit" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+            <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Body Content -->
+  <main>
+    
+    <!-- Single Station Focus Notification Banner (when ?unit= is used) -->
+    <div class="single-unit-banner" id="single-banner">
+      <div>
+        <div class="sub-text-title" id="single-banner-title">FOKUS MONITORING UNIT</div>
+        <div class="sub-text-desc">Menampilkan live billing khusus untuk unit yang dipilih.</div>
+      </div>
+      <a href="index.html" class="all-units-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        Semua Station
+      </a>
+    </div>
+
+    <!-- Station Cards Container -->
+    <div class="station-grid" id="stations-container">
+      <!-- Loading placeholder yang diberi ID agar otomatis hilang begitu data masuk -->
+      <div id="loading-placeholder" style="flex: 0 0 100%; text-align: center; padding: 80px 20px; color: var(--text-muted);">
+        <p style="font-size: 16px; font-weight: 800; letter-spacing: 2px;">MEMUAT DATA BILLING...</p>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Toast Notification -->
+  <div id="live-toast">Pesan</div>
+
+  <!-- DANA QR Modal Popup -->
+  <div class="qr-modal-backdrop" id="dana-modal" role="dialog" aria-modal="true" aria-labelledby="dana-title">
+    <div class="qr-modal-card">
+      <button class="qr-modal-close" id="close-dana-btn" title="Tutup Modal" aria-label="Tutup">&times;</button>
+      <div class="qr-modal-header">
+        <div class="dana-brand-badge">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="#118EEA">
+            <path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+          </svg>
+          <span id="dana-title">PEMBAYARAN CASHLESS DANA</span>
+        </div>
+        <p class="qr-modal-subtitle">Scan kode QR di bawah untuk pembayaran sewa PlayStation</p>
+      </div>
+      <div class="qr-frame">
+        <img src="dana_qr.png" alt="QR Code DANA ARzonePS" class="dana-qr-img">
+      </div>
+      <div class="qr-info-footer">
+        <div class="dana-acc-pill">
+          <span class="dana-num-label">NO. DANA</span>
+          <span class="dana-num-val">0856-4567-4321</span>
+        </div>
+        <div class="dana-owner-tag">a/n ARzonePS</div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="main-footer">
+    <div class="footer-help-banner">
+      <div class="footer-help-text">
+        <span class="f-help-title">BUTUH BANTUAN?</span>
+        <a href="https://wa.me/6285645674321?text=Halo%20ARzonePS,%20saya%20butuh%20bantuan" target="_blank" rel="noopener" class="f-wa-btn" title="Hubungi WhatsApp">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+            <path d="M17.472 14.382c-.301-.15-1.78-.879-2.056-.98-.276-.1-.477-.15-.678.15-.2.301-.778.98-.954 1.18-.175.201-.351.226-.652.075s-1.272-.469-2.423-1.496c-.896-.799-1.501-1.786-1.677-2.087-.175-.301-.019-.464.132-.614.136-.135.301-.351.452-.527.15-.175.2-.301.301-.501.101-.201.05-.376-.025-.526-.075-.15-.678-1.634-.929-2.238-.244-.588-.493-.509-.678-.518-.175-.009-.376-.011-.577-.011s-.527.075-.803.376c-.276.301-1.054 1.03-1.054 2.511 0 1.481 1.079 2.912 1.229 3.113.15.201 2.124 3.243 5.145 4.548.718.311 1.279.497 1.716.636.721.229 1.377.197 1.895.12.578-.087 1.78-.727 2.031-1.43.251-.703.251-1.306.176-1.43-.075-.124-.276-.199-.577-.35z"/>
+            <path d="M12 2C6.477 2 2 6.477 2 12c0 1.891.524 3.661 1.435 5.177L2 22l4.985-1.398A9.957 9.957 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18.2a8.16 8.16 0 0 1-4.246-1.183l-.304-.183-2.964.83.843-2.883-.199-.317A8.17 8.17 0 1 1 12 20.2z"/>
+          </svg>
+          <strong>0856-4567-4321</strong>
+        </a>
+      </div>
+    </div>
+    <div class="footer-copyright">
+      ARzonePS &copy; 2026 &bull; Realtime PlayStation Billing Monitor
+    </div>
+  </footer>
+
+  <!-- ================================================================
+       6. CORE JAVASCRIPT LOGIC
+       ================================================================ */ -->
+  <script>
+    /* ==========================================================
+       ARzonePS LIVE MONITOR — CORE JAVASCRIPT
+       Arsitektur: State Diffing + Single Global Ticker + Dual Sync
+       ========================================================== */
+
+    const FIREBASE_DB_URL = "https://arzoneps-default-rtdb.asia-southeast1.firebasedatabase.app";
+    const FIREBASE_NODE = "dashboard_rgans";
+    const DB_POLL_URL = `${FIREBASE_DB_URL}/${FIREBASE_NODE}.json`;
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAci1AqbGgopxXICOV26oha1sJzt2ZviNs",
+      authDomain: "arzoneps.firebaseapp.com",
+      databaseURL: FIREBASE_DB_URL,
+      projectId: "arzoneps",
+      storageBucket: "arzoneps.appspot.com",
+      messagingSenderId: "936092051207",
+      appId: "1:936092051207:android:3bb0b63695d637e65607a2"
+    };
+
+    // ── 1. DETEKSI PARAMETER URL UNIT (QR MEJA) ──
+    function normalizeUnit(value) {
+      if (value == null) return null;
+      const clean = String(value).trim().toLowerCase();
+      const compact = clean.replace(/\s+/g, '');
+      const match = compact.match(/^(?:tv|station|ps)?0*([1-9]\d*)$/);
+      return match ? `tv${match[1]}` : clean;
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const rawParam = urlParams.get('unit') || urlParams.get('station');
+    const focusedUnit = normalizeUnit(rawParam);
+
+    let stationNames = Array.from({ length: 10 }, (_, i) => `tv${i + 1}`);
+    let visibleStations = focusedUnit ? [focusedUnit] : stationNames;
+
+    // ── 2. STATE & DOM CACHE ──
+    const stateCache = new Map();
+    const domCache = new Map();
+    const lastTimerText = new Map();
+
+    let globalTicker = null;
+    let pollHandle = null;
+    let pollBusy = false;
+    let db = null;
+    let firebaseRef = null;
+
+    // ── 3. FORMATTER & PARSER UTILITIES ──
+    function toNumber(value, fallback = 0) {
+      const res = Number(value);
+      return Number.isFinite(res) ? res : fallback;
+    }
+
+    function parseIso(value) {
+      if (!value) return null;
+      let text = String(value).trim();
+      // Pastikan ISO tanpa timezone dianggap waktu WIB (+07:00)
+      if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(text) && !/(Z|[+-]\d{2}:\d{2})$/i.test(text)) {
+        text += "+07:00";
+      }
+      const ms = Date.parse(text);
+      return Number.isFinite(ms) ? ms : null;
+    }
+
+    function formatRupiah(num) {
+      const val = Math.max(0, toNumber(num));
+      return 'Rp ' + val.toLocaleString('id-ID', { maximumFractionDigits: 0 });
+    }
+
+    function formatDurasi(secVal) {
+      const sec = Math.max(0, Math.floor(secVal));
+      const h = Math.floor(sec / 3600);
+      const m = Math.floor((sec % 3600) / 60);
+      const s = sec % 60;
+      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    function formatJam(isoStr) {
+      const ms = parseIso(isoStr);
+      if (!ms) return '-';
+      try {
+        const d = new Date(ms);
+        return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false });
+      } catch(e) {
+        return '-';
+      }
+    }
+
+    function hitungBiayaDenganToleransi(elapsedSeconds, t30, t60, tolTipe, roundStep = 500) {
+      const menit = elapsedSeconds / 60;
+      if (menit < 1) return 0;
+      const jam = Math.floor(menit / 60);
+      const sisa = menit % 60;
+      const ra = t30 / 30;
+      const rb = (t60 - t30) / 30;
+      let rawBiaya = jam * t60 + (sisa <= 30 ? (sisa * ra) : (t30 + (sisa - 30) * rb));
+
+      const step = roundStep > 0 ? roundStep : 500;
+      const tipe = tolTipe || "akhir";
+      if (tipe === "awal") {
+        return Math.ceil(rawBiaya / step) * step;
+      } else if (tipe === "tengah") {
+        return Math.round(rawBiaya / step) * step;
+      } else {
+        return Math.floor(rawBiaya / step) * step;
+      }
+    }
+
+    // ── 3.5 TIME SYNC ENGINE (ZERO-DRIFT DENGAN JAM HP KASIR / SERVER) ──
+    let firebaseServerOffset = 0;
+    let phoneClockOffset = null;
+
+    try {
+      firebase.database().ref('.info/serverTimeOffset').on('value', function(snap) {
+        firebaseServerOffset = snap.val() || 0;
+      });
+    } catch(e) {}
+
+    function getEffectiveNow() {
+      if (phoneClockOffset !== null) {
+        return Date.now() - phoneClockOffset;
+      }
+      return Date.now() + firebaseServerOffset;
+    }
+
+    // ── 4. NORMALISASI STATE DARI FIREBASE ──
+    function normalizeState(raw) {
+      const s = raw && typeof raw === 'object' ? raw : {};
+      return {
+        running: Boolean(s.running === true || s.status === 'inUse' || s.status === 'active'),
+        mode: String(s.mode ?? 'STANDBY'),
+        paket_nama: String(s.paket_nama ?? ''),
+        paket_harga: toNumber(s.paket_harga),
+        total_sementara: toNumber(s.total_sementara),
+        start_time_iso: String(s.start_time_iso ?? ''),
+        end_time_iso: String(s.end_time_iso ?? ''),
+        status_bayar: String(s.status_bayar ?? 'TERSEDIA'),
+        is_paid: Boolean(s.bayar_dimuka || s.status_bayar === 'LUNAS' || s.is_paid),
+        is_time_up: Boolean(s.is_time_up),
+        tarif_30: toNumber(s.tarif_30, 5000),
+        tarif_60: toNumber(s.tarif_60, 10000),
+        toleransi_tipe: String(s.toleransi_tipe ?? 'akhir'),
+        round_step: toNumber(s.round_step, 500),
+        has_extra: Boolean(s.has_extra),
+        extra_label: String(s.extra_label ?? ''),
+        extra_fee: toNumber(s.extra_fee),
+        console_name: String(s.console_name ?? '')
+      };
+    }
+
+    // ── 5. DEEP DIFF ENGINE ──
+    function deepEqual(a, b) {
+      if (Object.is(a, b)) return true;
+      if (a === null || b === null || typeof a !== 'object' || typeof b !== 'object') return false;
+      const keysA = Object.keys(a);
+      const keysB = Object.keys(b);
+      if (keysA.length !== keysB.length) return false;
+      return keysA.every(k => Object.prototype.hasOwnProperty.call(b, k) && deepEqual(a[k], b[k]));
+    }
+
+    function changedFields(prev, next) {
+      if (!prev) return Object.keys(next);
+      return Object.keys(next).filter(k => !deepEqual(prev[k], next[k]));
+    }
+
+    // ── 6. BUILD DOM SEKALI SAJA & CACHE ELEMEN ──
+    function getStationNumber(name) {
+      const match = name.match(/\d+/);
+      return match ? match[0] : 'PS';
+    }
+
+    function buildCardDOM(stationName) {
+      const card = document.createElement('div');
+      card.className = 'station-card idle';
+      card.id = `card-${stationName}`;
+
+      const numStr = getStationNumber(stationName);
+
+      card.innerHTML = `
+        <div class="card-top">
+          <div class="station-identity">
+            <div class="station-number-badge">${numStr}</div>
+            <div class="station-name-wrap">
+              <h3 class="card-stn-title">${stationName} <span class="card-console-pill" style="display:none;"></span></h3>
+              <div class="station-sub-badge">PLAYSTATION CONSOLE</div>
+            </div>
+          </div>
+          <div class="session-mode-badge mode-idle card-mode-badge">TERSEDIA</div>
+        </div>
+
+        <!-- TAMPILAN IDLE -->
+        <div class="card-idle-display">
+          <div class="idle-ps-symbols">
+            <span class="ps-tri">▲</span>
+            <span class="ps-cir">●</span>
+            <span class="ps-xbt">✖</span>
+            <span class="ps-sqr">■</span>
+          </div>
+          <div class="idle-title">STANDBY</div>
+          <div class="idle-desc">Unit Siap Digunakan</div>
+        </div>
+
+        <!-- TAMPILAN AKTIF -->
+        <div class="card-running-display">
+          <div class="timer-screen">
+            <span class="timer-label card-timer-label">DURASI BERJALAN</span>
+            <span class="timer-digits card-timer-digits">00:00:00</span>
+          </div>
+
+          <div class="billing-screen">
+            <div class="billing-info">
+              <span class="billing-label card-bill-label">TOTAL TAGIHAN LIVE</span>
+              <span class="billing-amount card-bill-amount">Rp 0</span>
+            </div>
+            <div class="pay-status-pill pay-belum card-pay-badge">BELUM BAYAR</div>
+          </div>
+
+          <div class="card-extra-badge" style="display:none;"></div>
+
+          <div class="meta-details">
+            <div class="meta-item">
+              <span>JAM MULAI</span>
+              <span class="card-meta-start">-</span>
+            </div>
+            <div class="meta-item">
+              <span>JAM SELESAI</span>
+              <span class="card-meta-end">-</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAMPILAN BAWAH SAAT IDLE -->
+        <div class="card-idle-bottom">
+          <span class="idle-bottom-txt">🎮 KONSOL TERSEDIA</span>
+          <span class="idle-ready-pill">SIAP MAIN</span>
+        </div>
+      `;
+
+      const domRefs = {
+        card,
+        modeBadge: card.querySelector('.card-mode-badge'),
+        idleBox: card.querySelector('.card-idle-display'),
+        idleBottom: card.querySelector('.card-idle-bottom'),
+        runningBox: card.querySelector('.card-running-display'),
+        timerLbl: card.querySelector('.card-timer-label'),
+        timerDigits: card.querySelector('.card-timer-digits'),
+        billLbl: card.querySelector('.card-bill-label'),
+        billAmt: card.querySelector('.card-bill-amount'),
+        payBadge: card.querySelector('.card-pay-badge'),
+        extraBadge: card.querySelector('.card-extra-badge'),
+        consolePill: card.querySelector('.card-console-pill'),
+        metaStart: card.querySelector('.card-meta-start'),
+        metaEnd: card.querySelector('.card-meta-end')
+      };
+
+      domCache.set(stationName, domRefs);
+      return card;
+    }
+
+    function initializeLayout() {
+      const container = document.getElementById('stations-container');
+      const singleBanner = document.getElementById('single-banner');
+
+      // Hapus loading placeholder
+      const loader = document.getElementById('loading-placeholder');
+      if (loader) loader.remove();
+
+      if (focusedUnit) {
+        container.classList.add('single-focus');
+        if (singleBanner) {
+          singleBanner.style.display = 'flex';
+          const titleEl = document.getElementById('single-banner-title');
+          if (titleEl) titleEl.textContent = `LIVE MONITOR: ${focusedUnit.toUpperCase()}`;
+        }
+      } else {
+        container.classList.remove('single-focus');
+        if (singleBanner) singleBanner.style.display = 'none';
+      }
+
+      container.innerHTML = '';
+      for (const name of visibleStations) {
+        const card = buildCardDOM(name);
+        container.appendChild(card);
+      }
+    }
+
+    // ── 7. PATCH DOM HANYA JIKA ADA NILAI YANG BERUBAH ──
+    function patchStation(name, prev, next, fields) {
+      const dom = domCache.get(name);
+      if (!dom) return;
+
+      const isPaket = Boolean(next.mode === 'PAKET' || next.end_time_iso);
+      const isRunning = next.running;
+
+      // 1. Status Running vs Idle
+      if (fields.includes('running') || fields.includes('is_paid') || !prev) {
+        if (!isRunning) {
+          dom.card.className = 'station-card idle';
+          dom.idleBox.style.display = 'flex';
+          dom.idleBottom.style.display = 'flex';
+          dom.runningBox.style.display = 'none';
+          dom.modeBadge.className = 'session-mode-badge mode-idle';
+          dom.modeBadge.textContent = 'TERSEDIA';
+          dom.timerDigits.textContent = '00:00:00';
+          dom.metaStart.textContent = '-';
+          dom.metaEnd.textContent = '-';
+          return;
+        } else {
+          dom.card.className = `station-card running ${isPaket ? 'paket' : 'bebas'} ${next.is_paid ? 'is-paid' : 'is-unpaid'} ${next.is_time_up ? 'timeup' : ''}`;
+          dom.idleBox.style.display = 'none';
+          dom.idleBottom.style.display = 'none';
+          dom.runningBox.style.display = 'flex';
+        }
+      }
+
+      if (!isRunning) return;
+
+      // 2. Mode Badge
+      if (fields.includes('mode') || fields.includes('paket_nama') || fields.includes('is_time_up') || !prev) {
+        if (next.is_time_up) {
+          dom.modeBadge.className = 'session-mode-badge mode-timeup';
+          dom.modeBadge.textContent = 'WAKTU HABIS';
+        } else if (isPaket) {
+          dom.modeBadge.className = 'session-mode-badge mode-paket';
+          let label = 'PAKET MAIN';
+          if (next.paket_nama && next.paket_nama.toUpperCase() !== 'PAKET' && next.paket_nama.toUpperCase() !== 'PAKET MAIN') {
+            label = next.paket_nama.toUpperCase();
+          } else if (next.start_time_iso && next.end_time_iso) {
+            const sT = parseIso(next.start_time_iso);
+            const eT = parseIso(next.end_time_iso);
+            if (sT && eT) {
+              const durM = Math.round((eT - sT) / 60000);
+              const j = Math.floor(durM / 60);
+              const m = durM % 60;
+              label = j > 0 && m > 0 ? `PAKET ${j} JAM ${m} MNT` : (j > 0 ? `PAKET ${j} JAM` : `PAKET ${durM} MENIT`);
+            }
+          }
+          dom.modeBadge.textContent = label;
+        } else {
+          dom.modeBadge.className = 'session-mode-badge mode-bebas';
+          dom.modeBadge.textContent = 'OPEN BILLING (LOS)';
+        }
+      }
+
+      // 3. Biaya
+      if (fields.includes('total_sementara') || fields.includes('paket_harga') || fields.includes('mode') || fields.includes('is_paid') || !prev) {
+        if (isPaket) {
+          dom.billLbl.textContent = 'BIAYA PAKET';
+          const pHrg = next.paket_harga > 0 ? next.paket_harga : (next.total_sementara || next.tarif_60);
+          dom.billAmt.textContent = formatRupiah(pHrg);
+        } else {
+          dom.billLbl.textContent = 'TOTAL TAGIHAN LIVE';
+          dom.billAmt.textContent = formatRupiah(next.total_sementara);
+        }
+      }
+
+      // 4. Status Pembayaran
+      if (fields.includes('is_paid') || fields.includes('status_bayar') || !prev) {
+        dom.card.classList.toggle('is-paid', next.is_paid);
+        dom.card.classList.toggle('is-unpaid', !next.is_paid);
+        if (next.is_paid) {
+          dom.payBadge.className = 'pay-status-pill pay-lunas';
+          dom.payBadge.innerHTML = '&#10003; SUDAH BAYAR';
+        } else {
+          dom.payBadge.className = 'pay-status-pill pay-belum';
+          dom.payBadge.innerHTML = '&#9888; BELUM BAYAR';
+        }
+      }
+
+      // 5. Jam Mulai & Jam Selesai
+      if (fields.includes('start_time_iso') || !prev) {
+        dom.metaStart.textContent = formatJam(next.start_time_iso);
+      }
+      if (fields.includes('end_time_iso') || fields.includes('mode') || !prev) {
+        dom.metaEnd.textContent = isPaket && next.end_time_iso ? formatJam(next.end_time_iso) : 'Berjalan...';
+      }
+
+      // 6. Badge Biaya Tambahan (>3 Pemain / Stik Tambahan)
+      if (fields.includes('has_extra') || fields.includes('extra_label') || fields.includes('extra_fee') || !prev) {
+        if (next.has_extra && (next.extra_label || next.extra_fee > 0)) {
+          dom.extraBadge.style.display = 'inline-flex';
+          const feeTxt = next.extra_fee > 0 ? ` (+${formatRupiah(next.extra_fee)})` : '';
+          dom.extraBadge.textContent = `Tambahan${feeTxt}`;
+          dom.extraBadge.title = next.extra_label ? `Tambahan: ${next.extra_label}` : 'Biaya Tambahan';
+        } else {
+          dom.extraBadge.style.display = 'none';
+        }
+      }
+
+      // 6b. Badge Konsol (PS3 / PS4)
+      if (fields.includes('console_name') || !prev) {
+        if (next.console_name) {
+          dom.consolePill.style.display = 'inline-block';
+          dom.consolePill.textContent = next.console_name;
+        } else {
+          dom.consolePill.style.display = 'none';
+        }
+      }
+
+      // 7. Label Timer
+      if (isPaket) {
+        dom.timerLbl.textContent = 'SISA WAKTU';
+      } else {
+        dom.timerLbl.textContent = 'DURASI BERJALAN';
+      }
+
+      // Langsung panggil perhitungan timer
+      updateStationTimer(name, next, getEffectiveNow());
+    }
+
+    // ── 8. SINGLE GLOBAL TICKER (KEBAL FREEZE) ──
+    function updateStationTimer(name, state, now) {
+      const dom = domCache.get(name);
+      if (!dom || !state.running) return;
+
+      const isPaket = Boolean(state.mode === 'PAKET' || state.end_time_iso);
+      let nextText = '00:00:00';
+
+      if (isPaket) {
+        const endMs = parseIso(state.end_time_iso);
+        if (endMs !== null) {
+          const remainingSec = Math.max(0, Math.floor((endMs - now) / 1000));
+          nextText = formatDurasi(remainingSec);
+          if (remainingSec <= 0 && !dom.card.classList.contains('timeup')) {
+            dom.card.classList.add('timeup');
+            dom.modeBadge.className = 'session-mode-badge mode-timeup';
+            dom.modeBadge.textContent = 'WAKTU HABIS';
+          }
+        }
+      } else {
+        const startMs = parseIso(state.start_time_iso);
+        if (startMs !== null) {
+          const elapsedSec = Math.max(0, Math.floor((now - startMs) / 1000));
+          nextText = formatDurasi(elapsedSec);
+
+          // Update kalkulasi live billing lokal jika belum checkout
+          const liveCost = hitungBiayaDenganToleransi(elapsedSec, state.tarif_30, state.tarif_60, state.toleransi_tipe, state.round_step);
+          const finalCost = Math.max(liveCost, state.total_sementara);
+          const costStr = formatRupiah(finalCost);
+          if (dom.billAmt.textContent !== costStr) {
+            dom.billAmt.textContent = costStr;
+          }
+        }
+      }
+
+      if (lastTimerText.get(name) !== nextText) {
+        dom.timerDigits.textContent = nextText;
+        lastTimerText.set(name, nextText);
+      }
+    }
+
+    function tickAllStations() {
+      const now = getEffectiveNow();
+      for (const name of visibleStations) {
+        const state = stateCache.get(name);
+        if (state && state.running) {
+          updateStationTimer(name, state, now);
+        }
+      }
+    }
+
+    function startGlobalTicker() {
+      if (globalTicker !== null) return;
+      globalTicker = setInterval(tickAllStations, 250);
+    }
+
+    // ── 8.5 SINKRONISASI STASIUN DINAMIS (TV1 .. TV10+) ──
+    function syncStationsFromPayload(payload) {
+      if (focusedUnit || !payload || typeof payload !== 'object' || Array.isArray(payload)) return;
+      const keys = Object.keys(payload)
+        .filter(k => /^tv\d+$/i.test(k))
+        .sort((a, b) => {
+          const numA = parseInt(a.replace(/\D/g, ''), 10) || 0;
+          const numB = parseInt(b.replace(/\D/g, ''), 10) || 0;
+          return numA - numB;
+        });
+      if (keys.length === 0) return;
+
+      const isDifferent = keys.length !== visibleStations.length || keys.some((k, i) => k !== visibleStations[i]);
+      if (isDifferent) {
+        visibleStations = keys;
+        const container = document.getElementById('stations-container');
+        if (container) {
+          // Hapus kartu stasiun yang sudah tidak ada di payload
+          for (const [name, refs] of domCache.entries()) {
+            if (!visibleStations.includes(name)) {
+              if (refs.card && refs.card.parentNode) {
+                refs.card.parentNode.removeChild(refs.card);
+              }
+              domCache.delete(name);
+              stateCache.delete(name);
+              lastTimerText.delete(name);
+            }
+          }
+          // Tambahkan atau rapikan urutan kartu
+          for (const name of visibleStations) {
+            let card = document.getElementById(`card-${name}`);
+            if (!card) {
+              card = buildCardDOM(name);
+            }
+            container.appendChild(card);
+          }
+        }
+      }
+    }
+
+    // ── 9. APLIKASI SNAPSHOT DENGAN CHANGE DETECTION ──
+    function applySnapshot(payload, source = "unknown") {
+      if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return;
+
+      // Sinkronisasi mutlak dengan jam HP Kasir
+      if (payload._sync_meta && payload._sync_meta.device_time_ms) {
+        const deviceMs = Number(payload._sync_meta.device_time_ms);
+        if (!isNaN(deviceMs) && deviceMs > 0) {
+          phoneClockOffset = Date.now() - deviceMs;
+        }
+      }
+
+      syncStationsFromPayload(payload);
+
+      let changedCount = 0;
+
+      for (const name of visibleStations) {
+        const next = normalizeState(payload[name]);
+        const prev = stateCache.get(name);
+
+        // Abaikan jika seluruh nilai identik (tidak menyentuh DOM sama sekali)
+        if (prev && deepEqual(prev, next)) {
+          continue;
+        }
+
+        const fields = changedFields(prev, next);
+        stateCache.set(name, next);
+        patchStation(name, prev, next, fields);
+        changedCount++;
+      }
+
+      const dot = document.getElementById('net-dot');
+      const txt = document.getElementById('net-text');
+      if (dot && txt) {
+        dot.className = 'status-dot online';
+        txt.textContent = 'LIVE CONNECTED';
+        txt.style.color = 'var(--neon-green)';
+      }
+    }
+
+    // ── 10. JALUR UTAMA: FIREBASE REALTIME LISTENER ──
+    function startFirebaseListener() {
+      if (typeof firebase === 'undefined' || typeof firebase.database !== 'function') {
+        console.info('[ARzonePS] Firebase SDK offline. Menjalankan HTTP polling fallback.');
+        return;
+      }
+
+      try {
+        if (!firebase.apps.length) {
+          firebase.initializeApp(firebaseConfig);
+        }
+        db = firebase.database();
+        firebaseRef = db.ref(FIREBASE_NODE);
+
+        firebaseRef.on('value', snapshot => {
+          applySnapshot(snapshot.val(), 'firebase-realtime');
+        }, err => {
+          console.warn('[ARzonePS] Realtime stream error:', err);
+        });
+
+        db.ref('.info/connected').on('value', snap => {
+          const isOnline = Boolean(snap.val());
+          const dot = document.getElementById('net-dot');
+          const txt = document.getElementById('net-text');
+          if (dot && txt) {
+            dot.className = isOnline ? 'status-dot online' : 'status-dot offline';
+            txt.textContent = isOnline ? 'LIVE CONNECTED' : 'OFFLINE';
+            txt.style.color = isOnline ? 'var(--neon-green)' : 'var(--neon-red)';
+          }
+        });
+      } catch (err) {
+        console.warn('[ARzonePS] Firebase listener init error:', err);
+      }
+    }
+
+    // ── 11. JALUR FALLBACK: HTTP POLLING ──
+    async function fetchSnapshot() {
+      if (pollBusy) return;
+      pollBusy = true;
+      try {
+        const resp = await fetch(DB_POLL_URL + '?t=' + Date.now(), {
+          cache: 'no-store'
+        });
+        if (resp.ok) {
+          const payload = await resp.json();
+          applySnapshot(payload, 'http-polling');
+        }
+      } catch (e) {
+        // Abaikan fetch error sesaat
+      } finally {
+        pollBusy = false;
+      }
+    }
+
+    function startHttpPolling() {
+      if (pollHandle !== null) return;
+      fetchSnapshot();
+      pollHandle = setInterval(fetchSnapshot, 2000);
+    }
+
+    // ── 12. INISIALISASI MONITOR ──
+    function startMonitor() {
+      initializeLayout();
+      startGlobalTicker();
+      startFirebaseListener();
+      startHttpPolling();
+    }
+
+    // Live Clock WIB di Header (Tersinkronisasi Presisi ke Server / HP Kasir)
+    setInterval(() => {
+      const clk = document.getElementById('live-clock');
+      if (clk) {
+        clk.textContent = new Date(getEffectiveNow()).toLocaleTimeString('id-ID', { hour12: false });
+      }
+    }, 1000);
+
+    // Fullscreen Mode Handler
+    const fsBtn = document.getElementById('fullscreen-btn');
+    const fsEnter = document.getElementById('fs-icon-enter');
+    const fsExit = document.getElementById('fs-icon-exit');
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen();
+        } else if (document.documentElement.webkitRequestFullscreen) {
+          document.documentElement.webkitRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        }
+      }
+    }
+
+    function updateFsIcon() {
+      const isFs = Boolean(document.fullscreenElement || document.webkitFullscreenElement);
+      if (fsEnter && fsExit) {
+        fsEnter.style.display = isFs ? 'none' : 'block';
+        fsExit.style.display = isFs ? 'block' : 'none';
+      }
+    }
+
+    if (fsBtn) fsBtn.addEventListener('click', toggleFullscreen);
+    document.addEventListener('fullscreenchange', updateFsIcon);
+    document.addEventListener('webkitfullscreenchange', updateFsIcon);
+
+    // DANA QR Modal Popup Handlers
+    const openDanaBtn = document.getElementById('open-dana-btn');
+    const closeDanaBtn = document.getElementById('close-dana-btn');
+    const danaModal = document.getElementById('dana-modal');
+
+    if (openDanaBtn && danaModal) {
+      openDanaBtn.addEventListener('click', () => {
+        danaModal.classList.add('open');
+      });
+    }
+    if (closeDanaBtn && danaModal) {
+      closeDanaBtn.addEventListener('click', () => {
+        danaModal.classList.remove('open');
+      });
+    }
+    if (danaModal) {
+      danaModal.addEventListener('click', (e) => {
+        if (e.target === danaModal) {
+          danaModal.classList.remove('open');
+        }
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && danaModal.classList.contains('open')) {
+          danaModal.classList.remove('open');
+        }
+      });
+    }
+
+    // Screen WakeLock
+    async function enableScreenWakeLock() {
+      try {
+        if ('wakeLock' in navigator) {
+          let wakeLock = await navigator.wakeLock.request('screen');
+          document.addEventListener('visibilitychange', async () => {
+            if (wakeLock !== null && document.visibilityState === 'visible') {
+              wakeLock = await navigator.wakeLock.request('screen');
+            }
+          });
+        }
+      } catch(e) {}
+    }
+    enableScreenWakeLock();
+
+    // Start
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', startMonitor, { once: true });
+    } else {
+      startMonitor();
+    }
+
+  </script>
+</body>
+</html>
