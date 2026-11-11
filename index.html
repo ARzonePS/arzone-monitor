@@ -544,57 +544,109 @@
       box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
     }
 
-    /* Tablet & Layar Menengah: 3 Kolom Centered (3 x 3) */
-    @media (min-width: 768px) and (max-width: 1399px) {
+    /* Layar Mobile HP Portrait (< 768px) */
+    @media (max-width: 767px) {
       .station-card {
-        flex: 0 0 calc((100% - (2 * 18px)) / 3.02);
-        max-width: none;
-        min-width: 250px;
+        flex: 0 0 100%;
+        max-width: 480px;
       }
     }
 
-    /* Layar TV & Widescreen 1080p/4K (min-width: 1400px):
-       Muat 5 Kolom di atas, dan 4 kartu di bawah duduk persis di TENGAH (Centered)! */
-    @media (min-width: 1400px) {
+    /* LAYAR TV MONITOR, WIDESCREEN & LANDSCAPE (SEMUA SMART TV 720p/1080p/4K):
+       Menampilkan 5 Kolom di atas (TV1 s/d TV5) dan 4 Kolom di bawah (TV6 s/d TV9) duduk persis di tengah.
+       Hanya 2 baris kartu, menjamin SELURUH 9 STATION TAMPIL 100% PENUH DI LAYAR TV TANPA SCROLL! */
+    @media (min-width: 768px) and (orientation: landscape), (min-width: 850px) {
       .station-grid {
-        gap: 20px;
+        gap: 10px;
+        padding: 2px 4px;
       }
       .station-card {
-        flex: 0 0 calc((100% - (4 * 20px)) / 5.02);
-        max-width: 350px;
-        min-width: 270px;
-        padding: 22px 18px;
-        min-height: 330px;
-        gap: 14px;
+        flex: 0 0 calc((100% - (4 * 10px)) / 5.02);
+        max-width: none;
+        min-width: 150px;
+        padding: 10px 10px 8px;
+        min-height: 215px;
+        gap: 6px;
+        border-radius: 14px;
       }
       .station-number-badge {
-        width: 46px;
-        height: 46px;
-        font-size: 19px;
+        width: 30px;
+        height: 30px;
+        font-size: 13.5px;
+        border-radius: 6px;
       }
       .station-name-wrap h3 {
-        font-size: 19px;
+        font-size: 14.5px;
+      }
+      .station-sub-type {
+        font-size: 7.2px;
+      }
+      .session-mode-badge {
+        font-size: 7.8px;
+        padding: 2px 6px;
+      }
+      .card-timer-section {
+        padding: 6px 4px;
       }
       .timer-digits {
-        font-size: 34px;
+        font-size: 24px;
+      }
+      .timer-title {
+        font-size: 8px;
       }
       .billing-amount {
-        font-size: 19px;
+        font-size: 15px;
         white-space: nowrap;
       }
       .billing-label {
-        font-size: 9.5px;
+        font-size: 7.5px;
       }
       .card-idle-display {
-        padding: 22px 14px;
-        gap: 8px;
+        padding: 10px 6px;
+        gap: 5px;
+        border-radius: 10px;
       }
       .idle-ps-symbols {
-        font-size: 20px;
-        gap: 10px;
+        font-size: 14px;
+        gap: 6px;
+        margin-bottom: 1px;
       }
       .idle-title {
-        font-size: 20px;
+        font-size: 15px;
+        letter-spacing: 1.5px;
+      }
+      .idle-sub {
+        font-size: 8.5px;
+      }
+      .idle-bottom-bar {
+        padding: 4px 6px;
+        font-size: 8px;
+        border-radius: 6px;
+      }
+      .card-footer-meta {
+        padding-top: 4px;
+        font-size: 7.5px;
+      }
+    }
+
+    /* Layar TV 1080p / 4K Besar (> 1500px): Ukuran Font Sedikit Ditingkatkan */
+    @media (min-width: 1500px) {
+      .station-grid {
+        gap: 14px;
+      }
+      .station-card {
+        flex: 0 0 calc((100% - (4 * 14px)) / 5.02);
+        padding: 14px 12px;
+        min-height: 245px;
+      }
+      .timer-digits {
+        font-size: 28px;
+      }
+      .station-name-wrap h3 {
+        font-size: 16px;
+      }
+      .idle-title {
+        font-size: 17px;
       }
     }
 
