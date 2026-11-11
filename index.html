@@ -552,102 +552,307 @@
       }
     }
 
-    /* LAYAR TV MONITOR, WIDESCREEN & LANDSCAPE (SEMUA SMART TV 720p/1080p/4K):
-       Menampilkan 5 Kolom di atas (TV1 s/d TV5) dan 4 Kolom di bawah (TV6 s/d TV9) duduk persis di tengah.
-       Hanya 2 baris kartu, menjamin SELURUH 9 STATION TAMPIL 100% PENUH DI LAYAR TV TANPA SCROLL! */
-    @media (min-width: 768px) and (orientation: landscape), (min-width: 850px) {
-      .station-grid {
-        gap: 10px;
-        padding: 2px 4px;
+    /* ================================================================
+       LAYAR TV MONITOR, WIDESCREEN & LANDSCAPE (SMART TV FULL HD & 720p)
+       - 5 Station Baris Atas (TV1-TV5) + 4 Station Baris Bawah (TV6-TV9 Centered)
+       - Pas 100vh tanpa scrollbar
+       - Desain Cyberpunk Gaming Mewah, Padat, Terbaca Jelas dari Jauh
+       ================================================================ */
+    @media screen and (min-width: 768px) and (orientation: landscape), screen and (min-width: 850px) {
+      html, body {
+        height: 100vh !important;
+        max-height: 100vh !important;
+        overflow: hidden !important;
       }
-      .station-card {
-        flex: 0 0 calc((100% - (4 * 10px)) / 5.02);
-        max-width: none;
-        min-width: 150px;
-        padding: 10px 10px 8px;
-        min-height: 215px;
-        gap: 6px;
-        border-radius: 14px;
+
+      body {
+        display: flex !important;
+        flex-direction: column !important;
+      }
+
+      /* Header TV: Slim & Elegan */
+      header {
+        flex: 0 0 54px !important;
+        height: 54px !important;
+        padding: 6px 20px !important;
+      }
+      .brand-logo-frame {
+        width: 38px !important;
+        height: 38px !important;
+      }
+      .brand-text h1 {
+        font-size: 19px !important;
+      }
+      .live-clock-badge {
+        font-size: 16px !important;
+        padding: 5px 12px !important;
+      }
+
+      /* Main container: mengambil 100% sisa tinggi layar */
+      main {
+        flex: 1 1 0% !important;
+        min-height: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        padding: 8px 14px 6px !important;
+        overflow: hidden !important;
+      }
+
+      /* Grid 5 Atas + 4 Bawah */
+      .station-grid {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        align-content: center !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+        width: 100% !important;
+        height: 100% !important;
+        min-height: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: hidden !important;
+      }
+
+      /* Station Card: 5 Kolom x 2 Baris Presisi */
+      .station-grid .station-card {
+        flex: 0 0 calc((100% - 40px) / 5) !important;
+        width: calc((100% - 40px) / 5) !important;
+        max-width: none !important;
+        min-width: 0 !important;
+
+        height: calc((100% - 10px) / 2) !important;
+        max-height: calc((100% - 10px) / 2) !important;
+        min-height: 0 !important;
+
+        padding: 10px 12px 9px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        gap: 6px !important;
+        border-radius: 14px !important;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+        overflow: hidden !important;
+      }
+
+      /* Identity Atas Kartu */
+      .card-top {
+        flex: 0 0 auto !important;
+        gap: 6px !important;
       }
       .station-number-badge {
-        width: 30px;
-        height: 30px;
-        font-size: 13.5px;
-        border-radius: 6px;
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 15px !important;
+        border-radius: 8px !important;
+        flex: 0 0 32px !important;
       }
       .station-name-wrap h3 {
-        font-size: 14.5px;
+        font-size: 15px !important;
+        font-weight: 900 !important;
       }
-      .station-sub-type {
-        font-size: 7.2px;
+      .station-sub-badge {
+        font-size: 8px !important;
+        letter-spacing: 1px !important;
       }
       .session-mode-badge {
-        font-size: 7.8px;
-        padding: 2px 6px;
+        font-size: 8.5px !important;
+        padding: 3px 8px !important;
+        border-radius: 6px !important;
       }
-      .card-timer-section {
-        padding: 6px 4px;
-      }
-      .timer-digits {
-        font-size: 24px;
-      }
-      .timer-title {
-        font-size: 8px;
-      }
-      .billing-amount {
-        font-size: 15px;
-        white-space: nowrap;
-      }
-      .billing-label {
-        font-size: 7.5px;
-      }
+
+      /* ── TAMPILAN STANDBY (IDLE) DI TV: GAGAH & GLOWING ── */
       .card-idle-display {
-        padding: 10px 6px;
-        gap: 5px;
-        border-radius: 10px;
+        flex: 1 1 0% !important;
+        min-height: 0 !important;
+        padding: 8px 10px !important;
+        gap: 6px !important;
+        border-radius: 12px !important;
+        background: rgba(0, 0, 0, 0.4) !important;
+        border: 1px dashed rgba(0, 255, 136, 0.25) !important;
+        /* Note: display flex/none dikontrol JS */
       }
       .idle-ps-symbols {
-        font-size: 14px;
-        gap: 6px;
-        margin-bottom: 1px;
+        font-size: 18px !important;
+        gap: 10px !important;
       }
       .idle-title {
-        font-size: 15px;
-        letter-spacing: 1.5px;
+        font-size: 22px !important;
+        font-weight: 900 !important;
+        letter-spacing: 3px !important;
+        color: var(--neon-green) !important;
+        text-shadow: 0 0 20px rgba(0, 255, 136, 0.4) !important;
       }
-      .idle-sub {
-        font-size: 8.5px;
+      .idle-desc {
+        font-size: 10.5px !important;
+        color: var(--text-muted) !important;
       }
-      .idle-bottom-bar {
-        padding: 4px 6px;
-        font-size: 8px;
-        border-radius: 6px;
+      .card-idle-bottom {
+        flex: 0 0 auto !important;
+        padding: 5px 8px !important;
+        border-radius: 8px !important;
+        background: rgba(0, 255, 136, 0.08) !important;
+        border: 1px solid rgba(0, 255, 136, 0.2) !important;
       }
-      .card-footer-meta {
-        padding-top: 4px;
-        font-size: 7.5px;
+      .idle-bottom-txt {
+        font-size: 9.5px !important;
+        font-weight: 800 !important;
+        color: #94a3b8 !important;
       }
-    }
+      .idle-ready-pill {
+        font-size: 8.5px !important;
+        padding: 3px 8px !important;
+      }
 
-    /* Layar TV 1080p / 4K Besar (> 1500px): Ukuran Font Sedikit Ditingkatkan */
-    @media (min-width: 1500px) {
-      .station-grid {
-        gap: 14px;
+      /* ── TAMPILAN AKTIF (RUNNING) DI TV: PADAT, MEWAH & JELAS DARI JAUH ── */
+      .card-running-display {
+        flex: 1 1 0% !important;
+        min-height: 0 !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        gap: 6px !important;
+        /* Note: display flex/none dikontrol JS */
       }
-      .station-card {
-        flex: 0 0 calc((100% - (4 * 14px)) / 5.02);
-        padding: 14px 12px;
-        min-height: 245px;
+
+      /* 1. Layar Timer */
+      .timer-screen {
+        flex: 1 1 0% !important;
+        min-height: 0 !important;
+        padding: 8px 6px !important;
+        gap: 3px !important;
+        border-radius: 10px !important;
+        background: rgba(0, 0, 0, 0.55) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+      }
+      .timer-label {
+        font-size: 9px !important;
+        letter-spacing: 1.5px !important;
+        font-weight: 800 !important;
+        color: var(--text-muted) !important;
       }
       .timer-digits {
-        font-size: 28px;
+        font-size: 30px !important;
+        font-weight: 900 !important;
+        letter-spacing: -0.5px !important;
+        line-height: 1.1 !important;
+        white-space: nowrap !important;
+        font-variant-numeric: tabular-nums !important;
       }
-      .station-name-wrap h3 {
-        font-size: 16px;
+
+      /* 2. Layar Billing & Status Bayar (Status di Kanan Harga) */
+      .billing-screen {
+        flex: 0 0 auto !important;
+        padding: 8px 10px !important;
+        gap: 8px !important;
+        border-radius: 10px !important;
+        background: rgba(255, 255, 255, 0.04) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
       }
-      .idle-title {
-        font-size: 17px;
+      .billing-info {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        justify-content: center !important;
+        gap: 2px !important;
+        min-width: 0 !important;
+        flex: 1 1 auto !important;
       }
+      .billing-label {
+        font-size: 8.5px !important;
+        letter-spacing: 1px !important;
+        font-weight: 800 !important;
+        color: var(--text-muted) !important;
+        white-space: nowrap !important;
+        text-transform: uppercase !important;
+      }
+      .billing-amount {
+        font-size: 18px !important;
+        font-weight: 900 !important;
+        line-height: 1.1 !important;
+        letter-spacing: -0.5px !important;
+        white-space: nowrap !important;
+        color: #fff !important;
+      }
+      .pay-status-pill {
+        width: auto !important;
+        flex-shrink: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 5px 10px !important;
+        font-size: 9.5px !important;
+        font-weight: 900 !important;
+        letter-spacing: 0.5px !important;
+        border-radius: 20px !important;
+        line-height: 1.1 !important;
+        white-space: nowrap !important;
+      }
+
+      /* 3. Badge Tambahan (Jika Ada Stik/Pemain Tambahan) */
+      .card-extra-badge {
+        font-size: 8.5px !important;
+        padding: 3px 8px !important;
+        border-radius: 6px !important;
+      }
+
+      /* 4. Jam Mulai & Jam Selesai */
+      .meta-details {
+        flex: 0 0 auto !important;
+        padding-top: 3px !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        gap: 6px !important;
+      }
+      .meta-item {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: baseline !important;
+        gap: 4px !important;
+      }
+      .meta-item span:first-child {
+        font-size: 7.5px !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.5px !important;
+        color: var(--text-muted) !important;
+      }
+      .meta-item span:last-child {
+        font-size: 10px !important;
+        font-weight: 800 !important;
+        font-family: var(--font-mono) !important;
+        color: #f1f5f9 !important;
+      }
+
+      /* Footer TV: Minimalis */
+      .main-footer {
+        flex: 0 0 30px !important;
+        min-height: 0 !important;
+        max-height: 30px !important;
+        padding: 2px 10px !important;
+        overflow: hidden !important;
+      }
+      .footer-help-banner {
+        padding: 2px 12px !important;
+        gap: 6px !important;
+      }
+      .footer-help-icon { display: none !important; }
+      .f-help-title { font-size: 9px !important; }
+      .f-wa-btn {
+        font-size: 9.5px !important;
+        padding: 2px 10px !important;
+      }
+      .f-wa-btn strong { font-size: 9.5px !important; }
+      .footer-copyright { display: none !important; }
     }
 
     /* Card Accent Top Line */
@@ -860,7 +1065,7 @@
     .card-running-display {
       display: none;
       flex-direction: column;
-      gap: 16px;
+      gap: 10px;
       flex: 1;
     }
 
@@ -868,13 +1073,14 @@
       background: rgba(0, 0, 0, 0.55);
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 14px;
-      padding: 16px 14px;
+      padding: 20px 14px;
       text-align: center;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: 4px;
+      flex: 1;
     }
 
     .timer-label {
@@ -953,9 +1159,9 @@
 
     .billing-screen {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 14px 16px;
+      flex-direction: column;
+      align-items: stretch;
+      padding: 12px 16px;
       border-radius: 14px;
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid rgba(255, 255, 255, 0.08);
@@ -1296,440 +1502,7 @@
       .stats-pills { display: none; }
     }
 
-    /* =====================================================
-       ARzonePS - SMART TV LAYOUT (Clean Redesign v2)
-       Target: LG webOS | 1280x720 / 1920x1080
-       Layout: 5 atas + 4 bawah center
-       Key: NO display !important on JS-toggled elements
-    ===================================================== */
-
-    @media screen and (min-width: 800px) and (orientation: landscape),
-           screen and (min-width: 950px) {
-
-      /* PAGE: body flex column 100vh */
-      html, body {
-        height: 100% !important;
-        overflow: hidden !important;
-      }
-      body {
-        display: flex !important;
-        flex-direction: column !important;
-        height: 100vh !important;
-        max-height: 100vh !important;
-        background: #060a10 !important;
-        background-image: none !important;
-      }
-
-      /* HEADER: slim 52px */
-      header {
-        position: static !important;
-        flex: 0 0 52px !important;
-        height: 52px !important;
-        min-height: 0 !important;
-        padding: 0 16px !important;
-        z-index: 100 !important;
-        background: rgba(6,10,16,0.98) !important;
-        border-bottom: 1px solid #1e2d42 !important;
-        backdrop-filter: none !important;
-        -webkit-backdrop-filter: none !important;
-      }
-      .header-inner {
-        height: 100% !important;
-        max-width: none !important;
-        padding: 0 !important;
-      }
-      .brand-wrap { gap: 10px !important; }
-      .brand-logo-frame {
-        width: 34px !important;
-        height: 34px !important;
-      }
-      .brand-text h1 {
-        font-size: 17px !important;
-        line-height: 1 !important;
-      }
-      .brand-sub {
-        font-size: 7.5px !important;
-        letter-spacing: .6px !important;
-        margin-top: 1px !important;
-      }
-      .header-right { gap: 8px !important; }
-      .live-clock-badge {
-        font-size: 15px !important;
-        padding: 4px 10px !important;
-        letter-spacing: .5px !important;
-      }
-      .status-pill {
-        font-size: 10px !important;
-        padding: 4px 10px !important;
-      }
-      .dana-header-btn {
-        font-size: 10px !important;
-        padding: 5px 10px !important;
-      }
-      .ambient-glow { display: none !important; }
-
-      /* MAIN: flex 1, all remaining space */
-      main {
-        flex: 1 1 0% !important;
-        min-height: 0 !important;
-        width: 100% !important;
-        max-width: none !important;
-        margin: 0 !important;
-        padding: 6px 10px 4px !important;
-        display: flex !important;
-        flex-direction: column !important;
-        overflow: hidden !important;
-        position: static !important;
-        z-index: auto !important;
-      }
-
-      /* GRID: flex wrap 5+4 */
-      .station-grid {
-        display: flex !important;
-        flex-wrap: wrap !important;
-        flex-direction: row !important;
-        justify-content: center !important;
-        align-content: center !important;
-        align-items: stretch !important;
-        gap: 10px !important;
-        width: 100% !important;
-        height: 100% !important;
-        min-height: 0 !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        overflow: hidden !important;
-      }
-
-      /* CARD: 5 columns x 2 rows */
-      .station-grid .station-card {
-        flex: 0 0 calc((100% - 40px) / 5) !important;
-        width:  calc((100% - 40px) / 5) !important;
-        max-width: none !important;
-        min-width: 0 !important;
-        height: calc((100% - 10px) / 2) !important;
-        min-height: 0 !important;
-        max-height: none !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: space-between !important;
-        gap: 5px !important;
-        padding: 9px 9px 7px !important;
-        overflow: hidden !important;
-        background: #0d1320 !important;
-        border: 1px solid #1e2d42 !important;
-        border-radius: 10px !important;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.5) !important;
-        transform: none !important;
-        transition: none !important;
-      }
-      .station-card:hover {
-        transform: none !important;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.5) !important;
-        border-color: #1e2d42 !important;
-      }
-      .station-card::before {
-        height: 3px !important;
-        border-radius: 2px 2px 0 0 !important;
-      }
-
-      /* CARD TOP */
-      .card-top {
-        display: flex !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        flex: 0 0 auto !important;
-        gap: 4px !important;
-        min-width: 0 !important;
-      }
-      .station-identity {
-        display: flex !important;
-        align-items: center !important;
-        flex: 1 1 0% !important;
-        min-width: 0 !important;
-        gap: 6px !important;
-      }
-      .station-number-badge {
-        flex: 0 0 28px !important;
-        width: 28px !important;
-        height: 28px !important;
-        border-radius: 7px !important;
-        font-size: 14px !important;
-        line-height: 1 !important;
-      }
-      .station-name-wrap {
-        flex: 1 1 0% !important;
-        min-width: 0 !important;
-        overflow: hidden !important;
-      }
-      .station-name-wrap h3 {
-        font-size: 14px !important;
-        font-weight: 800 !important;
-        line-height: 1.1 !important;
-        margin: 0 !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-        letter-spacing: 0 !important;
-      }
-      .station-sub-type,
-      .station-sub-badge {
-        display: block !important;
-        font-size: 7.5px !important;
-        line-height: 1.2 !important;
-        letter-spacing: .3px !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-        margin-top: 1px !important;
-      }
-      .session-mode-badge {
-        flex: 0 0 auto !important;
-        max-width: 42% !important;
-        padding: 3px 6px !important;
-        font-size: 8.5px !important;
-        font-weight: 800 !important;
-        line-height: 1.1 !important;
-        letter-spacing: 0 !important;
-        border-radius: 5px !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-      }
-
-      /* IDLE DISPLAY: flex-direction only, NO display (JS controls it) */
-      .card-idle-display {
-        flex: 1 1 0% !important;
-        min-height: 0 !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        justify-content: center !important;
-        gap: 3px !important;
-        padding: 4px !important;
-        text-align: center !important;
-        border-radius: 7px !important;
-        border: 1px dashed rgba(255,255,255,0.07) !important;
-        background: rgba(0,0,0,0.25) !important;
-      }
-      .idle-ps-symbols {
-        display: flex !important;
-        font-size: 15px !important;
-        gap: 7px !important;
-        line-height: 1 !important;
-        margin: 0 !important;
-      }
-      .idle-title {
-        font-size: 20px !important;
-        font-weight: 900 !important;
-        letter-spacing: 2px !important;
-        line-height: 1.1 !important;
-        margin: 0 !important;
-        white-space: nowrap !important;
-      }
-      .idle-desc,
-      .idle-sub {
-        font-size: 9px !important;
-        line-height: 1.25 !important;
-        letter-spacing: 0 !important;
-      }
-
-      /* RUNNING DISPLAY: NO display (JS controls it) */
-      .card-running-content,
-      .card-running-display {
-        flex: 1 1 0% !important;
-        min-height: 0 !important;
-        flex-direction: column !important;
-        justify-content: space-between !important;
-        gap: 4px !important;
-      }
-
-      /* Timer */
-      .card-timer-section,
-      .timer-screen {
-        display: flex !important;
-        flex: 0 0 auto !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        justify-content: center !important;
-        gap: 1px !important;
-        padding: 5px 4px !important;
-        min-height: 0 !important;
-        background: rgba(0,0,0,0.35) !important;
-        border-radius: 7px !important;
-        text-align: center !important;
-        border: 1px solid rgba(255,255,255,0.05) !important;
-      }
-      .timer-title,
-      .timer-label {
-        font-size: 7.5px !important;
-        letter-spacing: .5px !important;
-        line-height: 1.1 !important;
-        text-align: center !important;
-      }
-      .timer-digits {
-        display: block !important;
-        width: 100% !important;
-        font-family: 'JetBrains Mono', monospace !important;
-        font-size: 22px !important;
-        font-weight: 900 !important;
-        line-height: 1.15 !important;
-        letter-spacing: -1px !important;
-        text-align: center !important;
-        white-space: nowrap !important;
-        font-variant-numeric: tabular-nums !important;
-      }
-
-      /* Billing */
-      .card-billing-row,
-      .billing-screen {
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: stretch !important;
-        flex: 0 0 auto !important;
-        gap: 3px !important;
-        padding: 5px 7px !important;
-        min-width: 0 !important;
-        border-radius: 7px !important;
-        background: rgba(255,255,255,.03) !important;
-        border: 1px solid rgba(255,255,255,0.05) !important;
-      }
-      .billing-info {
-        display: flex !important;
-        align-items: baseline !important;
-        justify-content: space-between !important;
-        gap: 4px !important;
-        min-width: 0 !important;
-        width: 100% !important;
-      }
-      .billing-label {
-        font-size: 7.5px !important;
-        letter-spacing: .5px !important;
-        line-height: 1.1 !important;
-        white-space: nowrap !important;
-      }
-      .billing-amount {
-        display: block !important;
-        font-family: 'JetBrains Mono', monospace !important;
-        font-size: 16px !important;
-        font-weight: 900 !important;
-        line-height: 1.15 !important;
-        letter-spacing: -.5px !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-        min-width: 0 !important;
-      }
-      .pay-status-pill {
-        display: flex !important;
-        align-self: stretch !important;
-        justify-content: center !important;
-        align-items: center !important;
-        padding: 2px 6px !important;
-        font-size: 8.5px !important;
-        font-weight: 800 !important;
-        letter-spacing: .3px !important;
-        border-radius: 5px !important;
-        line-height: 1.1 !important;
-      }
-
-      /* Meta (Jam Mulai/Selesai) */
-      .card-footer-meta,
-      .meta-details {
-        display: flex !important;
-        flex-wrap: nowrap !important;
-        justify-content: space-between !important;
-        align-items: center !important;
-        flex: 0 0 auto !important;
-        gap: 6px !important;
-        padding-top: 2px !important;
-        font-size: 8px !important;
-        min-width: 0 !important;
-        border-top: 1px solid rgba(255,255,255,0.05) !important;
-      }
-      .meta-item {
-        display: flex !important;
-        flex-direction: row !important;
-        gap: 3px !important;
-        align-items: baseline !important;
-        min-width: 0 !important;
-      }
-      .meta-item span:first-child {
-        font-size: 7px !important;
-        letter-spacing: 0 !important;
-        white-space: nowrap !important;
-      }
-      .meta-item span:last-child {
-        font-size: 8.5px !important;
-        font-weight: 700 !important;
-        font-family: 'JetBrains Mono', monospace !important;
-        white-space: nowrap !important;
-      }
-
-      /* IDLE BOTTOM BAR: NO display (JS controls it) */
-      .idle-bottom-bar,
-      .card-idle-bottom {
-        flex: 0 0 auto !important;
-        flex-direction: row !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        gap: 4px !important;
-        width: 100% !important;
-        min-width: 0 !important;
-        padding: 3px 6px !important;
-        border-radius: 5px !important;
-      }
-      .idle-bottom-txt {
-        min-width: 0 !important;
-        font-size: 8.5px !important;
-        font-weight: 700 !important;
-        line-height: 1.2 !important;
-        letter-spacing: 0 !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-        white-space: nowrap !important;
-      }
-      .siap-main-pill,
-      .idle-ready-pill {
-        flex: 0 0 auto !important;
-        padding: 2px 7px !important;
-        font-size: 8px !important;
-        font-weight: 800 !important;
-        line-height: 1.1 !important;
-        letter-spacing: 0 !important;
-        white-space: nowrap !important;
-        border-radius: 4px !important;
-      }
-      .card-extra-badge {
-        font-size: 7.5px !important;
-        line-height: 1.2 !important;
-        padding: 2px 5px !important;
-        max-width: 100% !important;
-      }
-
-      /* FOOTER: super compact */
-      .main-footer {
-        flex: 0 0 auto !important;
-        min-height: 0 !important;
-        max-height: 32px !important;
-        overflow: hidden !important;
-        gap: 0 !important;
-        padding: 1px 10px 2px !important;
-      }
-      .footer-help-banner {
-        padding: 2px 10px !important;
-        gap: 6px !important;
-        border-radius: 20px !important;
-      }
-      .footer-help-icon { display: none !important; }
-      .f-help-title { font-size: 8.5px !important; }
-      .f-wa-btn {
-        font-size: 9px !important;
-        padding: 2px 10px !important;
-      }
-      .f-wa-btn strong { font-size: 9px !important; }
-      .footer-copyright { display: none !important; }
-
-    }
-  </style>
+</style>
 </head>
 <body>
 
