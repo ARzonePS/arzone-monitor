@@ -1374,6 +1374,15 @@
        Arsitektur: State Diffing + Single Global Ticker + Dual Sync
        ========================================================== */
 
+    // SMART TV COMPATIBILITY & ERROR CAPTURE
+    window.onerror = function(msg, url, line) {
+      console.warn('[ARzonePS Monitor Error]', msg, line);
+      var netText = document.getElementById('net-text');
+      if (netText && netText.textContent === 'CONNECTING') {
+        netText.textContent = 'SYNC FALLBACK';
+      }
+    };
+
     const FIREBASE_DB_URL = "https://arzoneps-default-rtdb.asia-southeast1.firebasedatabase.app";
     const FIREBASE_NODE = "dashboard_rgans";
     const DB_POLL_URL = `${FIREBASE_DB_URL}/${FIREBASE_NODE}.json`;
@@ -1397,8 +1406,16 @@
       return match ? `tv${match[1]}` : clean;
     }
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const rawParam = urlParams.get('unit') || urlParams.get('station');
+    let rawParam = null;
+    try {
+      if (typeof URLSearchParams !== 'undefined') {
+        const urlParams = new URLSearchParams(window.location.search);
+        rawParam = urlParams.get('unit') || urlParams.get('station');
+      } else {
+        const match = window.location.search.match(/[?&](?:unit|station)=([^&#]*)/i);
+        rawParam = match ? decodeURIComponent(match[1]) : null;
+      }
+    } catch(e) {}
     const focusedUnit = normalizeUnit(rawParam);
 
     let stationNames = Array.from({ length: 10 }, (_, i) => `tv${i + 1}`);
@@ -1479,38 +1496,33 @@
     // ── 3.5 TIME SYNC ENGINE (FIREBASE SERVER TIME ZERO-DRIFT) ──
     let firebaseServerOffset = 0;
 
-    try {
-      firebase.database().ref('.info/serverTimeOffset').on('value', function(snap) {
-        firebaseServerOffset = snap.val() || 0;
-      });
-    } catch(e) {}
-
     function getEffectiveNow() {
       return Date.now() + firebaseServerOffset;
     }
 
-    // ── 4. NORMALISASI STATE DARI FIREBASE ──
+    // ── 4. NORMALISASI STATE DARI FIREBASE (KOMPATIBEL SMART TV - TANPA '??') ──
     function normalizeState(raw) {
       const s = raw && typeof raw === 'object' ? raw : {};
       return {
         running: Boolean(s.running === true || s.status === 'inUse' || s.status === 'active'),
-        mode: String(s.mode ?? 'STANDBY'),
-        paket_nama: String(s.paket_nama ?? ''),
+        mode: String(s.mode != null ? s.mode : 'STANDBY'),
+        paket_nama: String(s.paket_nama != null ? s.paket_nama : ''),
         paket_harga: toNumber(s.paket_harga),
         total_sementara: toNumber(s.total_sementara),
-        start_time_iso: String(s.start_time_iso ?? ''),
-        end_time_iso: String(s.end_time_iso ?? ''),
-        status_bayar: String(s.status_bayar ?? 'TERSEDIA'),
+        start_time_iso: String(s.start_time_iso != null ? s.start_time_iso : ''),
+        end_time_iso: String(s.end_time_iso != null ? s.end_time_iso : ''),
+        status_bayar: String(s.status_bayar != null ? s.status_bayar : 'TERSEDIA'),
         is_paid: Boolean(s.bayar_dimuka || s.status_bayar === 'LUNAS' || s.is_paid),
         is_time_up: Boolean(s.is_time_up),
         tarif_30: toNumber(s.tarif_30, 5000),
         tarif_60: toNumber(s.tarif_60, 10000),
-        toleransi_tipe: String(s.toleransi_tipe ?? 'akhir'),
+        toleransi_tipe: String(s.toleransi_tipe != null ? s.toleransi_tipe : 'akhir'),
         round_step: toNumber(s.round_step, 500),
         has_extra: Boolean(s.has_extra),
-        extra_label: String(s.extra_label ?? ''),
+        extra_label: String(s.extra_label != null ? s.extra_label : ''),
         extra_fee: toNumber(s.extra_fee),
-        console_name: String(s.console_name ?? '')
+        console_name: String(s.console_name != null ? s.console_name : ''),
+        display_name: String(s.display_name != null ? s.display_name : (s.station_name != null ? s.station_name : ''))
       };
     }
 
@@ -1604,6 +1616,7 @@
 
       const domRefs = {
         card,
+        titleEl: card.querySelector('.card-stn-title'),
         modeBadge: card.querySelector('.card-mode-badge'),
         idleBox: card.querySelector('.card-idle-display'),
         idleBottom: card.querySelector('.card-idle-bottom'),
@@ -1627,9 +1640,18 @@
       const container = document.getElementById('stations-container');
       const singleBanner = document.getElementById('single-banner');
 
-      // Hapus loading placeholder
-      const loader = document.getElementById('loading-placeholder');
-      if (loader) loader.remove();
+      // Hapus loading placeholder (Aman untuk browser Smart TV)
+      var loader = document.getElementById('loading-placeholder');
+      if (loader) {
+        loader.style.display = 'none';
+        try {
+          if (typeof loader.remove === 'function') {
+            loader.remove();
+          } else if (loader.parentNode) {
+            loader.parentNode.removeChild(loader);
+          }
+        } catch(e) {}
+      }
 
       if (focusedUnit) {
         container.classList.add('single-focus');
@@ -1657,6 +1679,14 @@
 
       const isPaket = Boolean(next.mode === 'PAKET' || next.end_time_iso);
       const isRunning = next.running;
+
+      // 0. Update display title if provided
+      if (dom.titleEl && (next.display_name || fields.includes('display_name'))) {
+        const titleText = next.display_name || name;
+        if (dom.titleEl.childNodes && dom.titleEl.childNodes.length > 0) {
+          dom.titleEl.childNodes[0].textContent = titleText + ' ';
+        }
+      }
 
       // 1. Status Running vs Idle
       if (fields.includes('running') || fields.includes('is_paid') || !prev) {
@@ -1830,15 +1860,36 @@
       globalTicker = setInterval(tickAllStations, 250);
     }
 
+    function resolvePayloadStation(payload, name) {
+      if (!payload || typeof payload !== 'object') return null;
+      if (payload[name] !== undefined) return payload[name];
+      const lower = String(name).toLowerCase();
+      for (const k of Object.keys(payload)) {
+        if (k.toLowerCase() === lower) return payload[k];
+      }
+      return null;
+    }
+
     // ── 8.5 SINKRONISASI STASIUN DINAMIS (TV1 .. TV10+) ──
     function syncStationsFromPayload(payload) {
-      if (focusedUnit || !payload || typeof payload !== 'object' || Array.isArray(payload)) return;
+      if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return;
+      if (focusedUnit) {
+        const matchKey = Object.keys(payload).find(k => k.toLowerCase() === focusedUnit.toLowerCase());
+        if (matchKey && visibleStations[0] !== matchKey) {
+          visibleStations = [matchKey];
+          initializeLayout();
+        }
+        return;
+      }
       const keys = Object.keys(payload)
-        .filter(k => /^tv\d+$/i.test(k))
+        .filter(k => !k.startsWith('_'))
         .sort((a, b) => {
-          const numA = parseInt(a.replace(/\D/g, ''), 10) || 0;
-          const numB = parseInt(b.replace(/\D/g, ''), 10) || 0;
-          return numA - numB;
+          const matchA = a.match(/\d+/);
+          const matchB = b.match(/\d+/);
+          const numA = matchA ? parseInt(matchA[0], 10) : 0;
+          const numB = matchB ? parseInt(matchB[0], 10) : 0;
+          if (numA !== numB) return numA - numB;
+          return a.localeCompare(b);
         });
       if (keys.length === 0) return;
 
@@ -1879,7 +1930,7 @@
       let changedCount = 0;
 
       for (const name of visibleStations) {
-        const next = normalizeState(payload[name]);
+        const next = normalizeState(resolvePayloadStation(payload, name));
         const prev = stateCache.get(name);
 
         // Abaikan jika seluruh nilai identik (tidak menyentuh DOM sama sekali)
@@ -1916,16 +1967,22 @@
         db = firebase.database();
         firebaseRef = db.ref(FIREBASE_NODE);
 
-        firebaseRef.on('value', snapshot => {
+        try {
+          db.ref('.info/serverTimeOffset').on('value', function(snap) {
+            firebaseServerOffset = snap.val() || 0;
+          });
+        } catch(e) {}
+
+        firebaseRef.on('value', function(snapshot) {
           applySnapshot(snapshot.val(), 'firebase-realtime');
-        }, err => {
+        }, function(err) {
           console.warn('[ARzonePS] Realtime stream error:', err);
         });
 
-        db.ref('.info/connected').on('value', snap => {
-          const isOnline = Boolean(snap.val());
-          const dot = document.getElementById('net-dot');
-          const txt = document.getElementById('net-text');
+        db.ref('.info/connected').on('value', function(snap) {
+          var isOnline = Boolean(snap.val());
+          var dot = document.getElementById('net-dot');
+          var txt = document.getElementById('net-text');
           if (dot && txt) {
             dot.className = isOnline ? 'status-dot online' : 'status-dot offline';
             txt.textContent = isOnline ? 'LIVE CONNECTED' : 'OFFLINE';
@@ -1937,22 +1994,62 @@
       }
     }
 
-    // ── 11. JALUR FALLBACK: HTTP POLLING ──
-    async function fetchSnapshot() {
+    // ── 11. JALUR FALLBACK: HTTP POLLING (KOMPATIBEL DENGAN SEMUA SMART TV) ──
+    function fetchSnapshot() {
       if (pollBusy) return;
       pollBusy = true;
-      try {
-        const resp = await fetch(DB_POLL_URL + '?t=' + Date.now(), {
-          cache: 'no-store'
-        });
-        if (resp.ok) {
-          const payload = await resp.json();
+
+      var url = DB_POLL_URL + '?t=' + Date.now();
+
+      function onPayload(payload) {
+        pollBusy = false;
+        if (payload) {
           applySnapshot(payload, 'http-polling');
         }
-      } catch (e) {
-        // Abaikan fetch error sesaat
-      } finally {
+      }
+
+      function onError() {
         pollBusy = false;
+      }
+
+      if (typeof window.fetch === 'function') {
+        window.fetch(url, { cache: 'no-store' })
+          .then(function(resp) {
+            if (resp.ok) return resp.json();
+            throw new Error('HTTP ' + resp.status);
+          })
+          .then(onPayload)
+          .catch(function() {
+            pollViaXhr(url, onPayload, onError);
+          });
+      } else {
+        pollViaXhr(url, onPayload, onError);
+      }
+    }
+
+    function pollViaXhr(url, onSuccess, onError) {
+      try {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', url, true);
+        xhr.setRequestHeader('Cache-Control', 'no-cache');
+        xhr.onload = function() {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              var payload = JSON.parse(xhr.responseText);
+              onSuccess(payload);
+            } catch(e) {
+              onError();
+            }
+          } else {
+            onError();
+          }
+        };
+        xhr.onerror = function() {
+          onError();
+        };
+        xhr.send();
+      } catch(e) {
+        onError();
       }
     }
 
@@ -1962,21 +2059,24 @@
       pollHandle = setInterval(fetchSnapshot, 2000);
     }
 
+    function updateLiveClock() {
+      var clk = document.getElementById('live-clock');
+      if (clk) {
+        clk.textContent = new Date(getEffectiveNow()).toLocaleTimeString('id-ID', { hour12: false });
+      }
+    }
+
     // ── 12. INISIALISASI MONITOR ──
     function startMonitor() {
+      updateLiveClock();
       initializeLayout();
       startGlobalTicker();
       startFirebaseListener();
       startHttpPolling();
     }
 
-    // Live Clock WIB di Header (Tersinkronisasi Presisi ke Server / HP Kasir)
-    setInterval(() => {
-      const clk = document.getElementById('live-clock');
-      if (clk) {
-        clk.textContent = new Date(getEffectiveNow()).toLocaleTimeString('id-ID', { hour12: false });
-      }
-    }, 1000);
+    // Live Clock WIB di Header
+    setInterval(updateLiveClock, 1000);
 
     // Fullscreen Mode Handler
     const fsBtn = document.getElementById('fullscreen-btn');
@@ -2039,16 +2139,17 @@
       });
     }
 
-    // Screen WakeLock
-    async function enableScreenWakeLock() {
+    // Screen WakeLock (Kompatibel Semua Browser & Smart TV)
+    function enableScreenWakeLock() {
       try {
-        if ('wakeLock' in navigator) {
-          let wakeLock = await navigator.wakeLock.request('screen');
-          document.addEventListener('visibilitychange', async () => {
-            if (wakeLock !== null && document.visibilityState === 'visible') {
-              wakeLock = await navigator.wakeLock.request('screen');
-            }
-          });
+        if ('wakeLock' in navigator && typeof navigator.wakeLock.request === 'function') {
+          navigator.wakeLock.request('screen').then(function(lock) {
+            document.addEventListener('visibilitychange', function() {
+              if (lock !== null && document.visibilityState === 'visible') {
+                navigator.wakeLock.request('screen').catch(function() {});
+              }
+            });
+          }).catch(function() {});
         }
       } catch(e) {}
     }
