@@ -556,7 +556,7 @@
        LAYAR TV MONITOR, WIDESCREEN & LANDSCAPE (SMART TV FULL HD & 720p)
        - 5 Station Baris Atas (TV1-TV5) + 4 Station Baris Bawah (TV6-TV9 Centered)
        - Pas 100vh tanpa scrollbar
-       - Desain Cyberpunk Gaming Mewah, TULISAN BESAR & PADAT DARI JAUH
+       - FONT SUPER BESAR & BOLD: SANGAT JELAS TERBACA DARI JARAK JAUH
        ================================================================ */
     @media screen and (min-width: 768px) and (orientation: landscape), screen and (min-width: 850px) {
       html, body {
@@ -584,8 +584,8 @@
         font-size: 19px !important;
       }
       .live-clock-badge {
-        font-size: 16px !important;
-        padding: 5px 12px !important;
+        font-size: 17px !important;
+        padding: 5px 14px !important;
       }
 
       /* Main container: mengambil 100% sisa tinggi layar */
@@ -594,7 +594,7 @@
         min-height: 0 !important;
         display: flex !important;
         flex-direction: column !important;
-        padding: 8px 14px 6px !important;
+        padding: 6px 12px 4px !important;
         overflow: hidden !important;
       }
 
@@ -630,133 +630,135 @@
         display: flex !important;
         flex-direction: column !important;
         justify-content: space-between !important;
-        gap: 8px !important;
+        gap: 7px !important;
         border-radius: 16px !important;
-        box-shadow: 0 8px 26px rgba(0, 0, 0, 0.55) !important;
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.6) !important;
         overflow: hidden !important;
       }
 
-      /* Identity Atas Kartu (Lebih Besar & Tegas) */
+      /* Identity Atas Kartu (Besar & Mantap) */
       .card-top {
         flex: 0 0 auto !important;
         gap: 8px !important;
       }
       .station-number-badge {
-        width: 36px !important;
-        height: 36px !important;
-        font-size: 17px !important;
+        width: 38px !important;
+        height: 38px !important;
+        font-size: 19px !important;
         font-weight: 900 !important;
         border-radius: 9px !important;
-        flex: 0 0 36px !important;
+        flex: 0 0 38px !important;
       }
       .station-name-wrap h3 {
-        font-size: 17px !important;
+        font-size: 19px !important;
         font-weight: 900 !important;
         letter-spacing: 0.5px !important;
       }
       .station-sub-badge {
-        font-size: 8.5px !important;
+        font-size: 9px !important;
         letter-spacing: 1.2px !important;
       }
       .session-mode-badge {
-        font-size: 9.5px !important;
-        padding: 4px 10px !important;
+        font-size: 10.5px !important;
+        padding: 4px 12px !important;
         font-weight: 900 !important;
         border-radius: 8px !important;
       }
 
-      /* ── TAMPILAN STANDBY (IDLE) DI TV: LEBIH BESAR, GAGAH & GLOWING ── */
+      /* ── TAMPILAN STANDBY (IDLE) DI TV: SANGAT BESAR & GLOWING DARI UJUNG RUANGAN ── */
       .card-idle-display {
         flex: 1 1 0% !important;
         min-height: 0 !important;
         padding: 14px 12px !important;
-        gap: 10px !important;
+        gap: 12px !important;
         border-radius: 14px !important;
         background: rgba(0, 0, 0, 0.45) !important;
-        border: 1px dashed rgba(0, 255, 136, 0.3) !important;
+        border: 1px dashed rgba(0, 255, 136, 0.35) !important;
       }
       .idle-ps-symbols {
-        font-size: 26px !important;
-        gap: 14px !important;
+        font-size: 32px !important;
+        gap: 16px !important;
       }
       .idle-title {
-        font-size: 28px !important;
+        font-size: 36px !important;
         font-weight: 900 !important;
-        letter-spacing: 3.5px !important;
+        letter-spacing: 4px !important;
         color: var(--neon-green) !important;
-        text-shadow: 0 0 25px rgba(0, 255, 136, 0.5) !important;
+        text-shadow: 0 0 25px rgba(0, 255, 136, 0.6) !important;
+        line-height: 1 !important;
       }
       .idle-desc {
-        font-size: 12px !important;
-        font-weight: 700 !important;
+        font-size: 13px !important;
+        font-weight: 800 !important;
         color: var(--text-muted) !important;
-        letter-spacing: 0.5px !important;
+        letter-spacing: 0.8px !important;
       }
       .card-idle-bottom {
         flex: 0 0 auto !important;
         padding: 7px 12px !important;
         border-radius: 10px !important;
         background: rgba(0, 255, 136, 0.08) !important;
-        border: 1px solid rgba(0, 255, 136, 0.22) !important;
+        border: 1px solid rgba(0, 255, 136, 0.25) !important;
       }
       .idle-bottom-txt {
-        font-size: 11px !important;
+        font-size: 12px !important;
         font-weight: 800 !important;
         color: #94a3b8 !important;
       }
       .idle-ready-pill {
-        font-size: 10px !important;
+        font-size: 11px !important;
         font-weight: 900 !important;
-        padding: 3.5px 10px !important;
+        padding: 4px 12px !important;
       }
 
-      /* ── TAMPILAN AKTIF (RUNNING) DI TV: PADAT, FONT BESAR & TERBACA JELAS ── */
+      /* ── TAMPILAN AKTIF (RUNNING) DI TV: TIMER 46PX BESAR & SANGAT TAJAM ── */
       .card-running-display {
         flex: 1 1 0% !important;
         min-height: 0 !important;
         flex-direction: column !important;
         justify-content: space-between !important;
-        gap: 8px !important;
+        gap: 7px !important;
       }
 
-      /* 1. Layar Timer (Besar, Bold, Tajam) */
+      /* 1. Layar Timer (FOKUS UTAMA: Giant 48px, Super Kontras & Glowing) */
       .timer-screen {
         flex: 1 1 0% !important;
         min-height: 0 !important;
-        padding: 12px 8px !important;
+        padding: 14px 6px !important;
         gap: 4px !important;
-        border-radius: 12px !important;
-        background: rgba(0, 0, 0, 0.6) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 14px !important;
+        background: rgba(0, 0, 0, 0.72) !important;
+        border: 1.5px solid rgba(255, 255, 255, 0.14) !important;
+        box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.6) !important;
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
         justify-content: center !important;
       }
       .timer-label {
-        font-size: 10px !important;
-        letter-spacing: 2px !important;
+        font-size: 11.5px !important;
+        letter-spacing: 2.5px !important;
         font-weight: 900 !important;
         color: var(--text-muted) !important;
         text-transform: uppercase !important;
       }
       .timer-digits {
-        font-size: 38px !important;
+        font-size: 54px !important;
         font-weight: 900 !important;
-        letter-spacing: -0.5px !important;
-        line-height: 1.05 !important;
+        letter-spacing: -2px !important;
+        line-height: 0.95 !important;
         white-space: nowrap !important;
         font-variant-numeric: tabular-nums !important;
       }
 
-      /* 2. Layar Billing & Status Bayar (Kiri: Harga Besar, Kanan: Status) */
+      /* 2. Layar Billing & Status Bayar (Compact & Aman Puluhan/Ratusan Ribu) */
       .billing-screen {
         flex: 0 0 auto !important;
-        padding: 8px 12px !important;
-        gap: 8px !important;
-        border-radius: 12px !important;
-        background: rgba(255, 255, 255, 0.045) !important;
-        border: 1px solid rgba(255, 255, 255, 0.09) !important;
+        padding: 5px 8px !important;
+        gap: 6px !important;
+        border-radius: 8px !important;
+        background: rgba(255, 255, 255, 0.035) !important;
+        border: 1px solid rgba(255, 255, 255, 0.07) !important;
         display: flex !important;
         flex-direction: row !important;
         align-items: center !important;
@@ -767,23 +769,23 @@
         flex-direction: column !important;
         align-items: flex-start !important;
         justify-content: center !important;
-        gap: 2px !important;
+        gap: 1px !important;
         min-width: 0 !important;
         flex: 1 1 auto !important;
       }
       .billing-label {
-        font-size: 9px !important;
-        letter-spacing: 1px !important;
+        font-size: 7.5px !important;
+        letter-spacing: 0.8px !important;
         font-weight: 800 !important;
         color: var(--text-muted) !important;
         white-space: nowrap !important;
         text-transform: uppercase !important;
       }
       .billing-amount {
-        font-size: 22px !important;
+        font-size: 17px !important;
         font-weight: 900 !important;
         line-height: 1.1 !important;
-        letter-spacing: -0.5px !important;
+        letter-spacing: -0.4px !important;
         white-space: nowrap !important;
         color: #fff !important;
       }
@@ -793,10 +795,10 @@
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
-        padding: 5px 12px !important;
-        font-size: 10.5px !important;
+        padding: 4px 10px !important;
+        font-size: 10px !important;
         font-weight: 900 !important;
-        letter-spacing: 0.6px !important;
+        letter-spacing: 0.5px !important;
         border-radius: 20px !important;
         line-height: 1.1 !important;
         white-space: nowrap !important;
@@ -804,17 +806,17 @@
 
       /* 3. Badge Tambahan (Jika Ada Stik/Pemain Tambahan) */
       .card-extra-badge {
-        font-size: 9.5px !important;
-        font-weight: 800 !important;
-        padding: 4px 10px !important;
+        font-size: 10px !important;
+        font-weight: 900 !important;
+        padding: 4px 12px !important;
         border-radius: 8px !important;
       }
 
-      /* 4. Jam Mulai & Jam Selesai (Besar & Kontras Jelas) */
+      /* 4. Jam Mulai & Jam Selesai (15.5px Lebih Besar & Jelas) */
       .meta-details {
         flex: 0 0 auto !important;
-        padding-top: 5px !important;
-        border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+        padding-top: 6px !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
         display: flex !important;
         justify-content: space-between !important;
         align-items: center !important;
@@ -827,13 +829,13 @@
         gap: 5px !important;
       }
       .meta-item span:first-child {
-        font-size: 8.5px !important;
+        font-size: 10px !important;
         font-weight: 800 !important;
         letter-spacing: 0.5px !important;
         color: var(--text-muted) !important;
       }
       .meta-item span:last-child {
-        font-size: 12px !important;
+        font-size: 15.5px !important;
         font-weight: 900 !important;
         font-family: var(--font-mono) !important;
         color: #ffffff !important;
