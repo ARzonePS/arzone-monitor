@@ -556,7 +556,7 @@
        LAYAR TV MONITOR, WIDESCREEN & LANDSCAPE (SMART TV FULL HD & 720p)
        - 5 Station Baris Atas (TV1-TV5) + 4 Station Baris Bawah (TV6-TV9 Centered)
        - Pas 100vh tanpa scrollbar
-       - Desain Cyberpunk Gaming Mewah, Padat, Terbaca Jelas dari Jauh
+       - Desain Cyberpunk Gaming Mewah, TULISAN BESAR & PADAT DARI JAUH
        ================================================================ */
     @media screen and (min-width: 768px) and (orientation: landscape), screen and (min-width: 850px) {
       html, body {
@@ -606,7 +606,7 @@
         justify-content: center !important;
         align-content: center !important;
         align-items: stretch !important;
-        gap: 10px !important;
+        gap: 12px !important;
         width: 100% !important;
         height: 100% !important;
         min-height: 0 !important;
@@ -617,141 +617,146 @@
 
       /* Station Card: 5 Kolom x 2 Baris Presisi */
       .station-grid .station-card {
-        flex: 0 0 calc((100% - 40px) / 5) !important;
-        width: calc((100% - 40px) / 5) !important;
+        flex: 0 0 calc((100% - 48px) / 5) !important;
+        width: calc((100% - 48px) / 5) !important;
         max-width: none !important;
         min-width: 0 !important;
 
-        height: calc((100% - 10px) / 2) !important;
-        max-height: calc((100% - 10px) / 2) !important;
+        height: calc((100% - 12px) / 2) !important;
+        max-height: calc((100% - 12px) / 2) !important;
         min-height: 0 !important;
 
-        padding: 10px 12px 9px !important;
+        padding: 12px 14px 10px !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: space-between !important;
-        gap: 6px !important;
-        border-radius: 14px !important;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+        gap: 8px !important;
+        border-radius: 16px !important;
+        box-shadow: 0 8px 26px rgba(0, 0, 0, 0.55) !important;
         overflow: hidden !important;
       }
 
-      /* Identity Atas Kartu */
+      /* Identity Atas Kartu (Lebih Besar & Tegas) */
       .card-top {
         flex: 0 0 auto !important;
-        gap: 6px !important;
+        gap: 8px !important;
       }
       .station-number-badge {
-        width: 32px !important;
-        height: 32px !important;
-        font-size: 15px !important;
-        border-radius: 8px !important;
-        flex: 0 0 32px !important;
+        width: 36px !important;
+        height: 36px !important;
+        font-size: 17px !important;
+        font-weight: 900 !important;
+        border-radius: 9px !important;
+        flex: 0 0 36px !important;
       }
       .station-name-wrap h3 {
-        font-size: 15px !important;
+        font-size: 17px !important;
         font-weight: 900 !important;
+        letter-spacing: 0.5px !important;
       }
       .station-sub-badge {
-        font-size: 8px !important;
-        letter-spacing: 1px !important;
+        font-size: 8.5px !important;
+        letter-spacing: 1.2px !important;
       }
       .session-mode-badge {
-        font-size: 8.5px !important;
-        padding: 3px 8px !important;
-        border-radius: 6px !important;
+        font-size: 9.5px !important;
+        padding: 4px 10px !important;
+        font-weight: 900 !important;
+        border-radius: 8px !important;
       }
 
-      /* ── TAMPILAN STANDBY (IDLE) DI TV: GAGAH & GLOWING ── */
+      /* ── TAMPILAN STANDBY (IDLE) DI TV: LEBIH BESAR, GAGAH & GLOWING ── */
       .card-idle-display {
         flex: 1 1 0% !important;
         min-height: 0 !important;
-        padding: 8px 10px !important;
-        gap: 6px !important;
-        border-radius: 12px !important;
-        background: rgba(0, 0, 0, 0.4) !important;
-        border: 1px dashed rgba(0, 255, 136, 0.25) !important;
-        /* Note: display flex/none dikontrol JS */
+        padding: 14px 12px !important;
+        gap: 10px !important;
+        border-radius: 14px !important;
+        background: rgba(0, 0, 0, 0.45) !important;
+        border: 1px dashed rgba(0, 255, 136, 0.3) !important;
       }
       .idle-ps-symbols {
-        font-size: 18px !important;
-        gap: 10px !important;
+        font-size: 26px !important;
+        gap: 14px !important;
       }
       .idle-title {
-        font-size: 22px !important;
+        font-size: 28px !important;
         font-weight: 900 !important;
-        letter-spacing: 3px !important;
+        letter-spacing: 3.5px !important;
         color: var(--neon-green) !important;
-        text-shadow: 0 0 20px rgba(0, 255, 136, 0.4) !important;
+        text-shadow: 0 0 25px rgba(0, 255, 136, 0.5) !important;
       }
       .idle-desc {
-        font-size: 10.5px !important;
+        font-size: 12px !important;
+        font-weight: 700 !important;
         color: var(--text-muted) !important;
+        letter-spacing: 0.5px !important;
       }
       .card-idle-bottom {
         flex: 0 0 auto !important;
-        padding: 5px 8px !important;
-        border-radius: 8px !important;
+        padding: 7px 12px !important;
+        border-radius: 10px !important;
         background: rgba(0, 255, 136, 0.08) !important;
-        border: 1px solid rgba(0, 255, 136, 0.2) !important;
+        border: 1px solid rgba(0, 255, 136, 0.22) !important;
       }
       .idle-bottom-txt {
-        font-size: 9.5px !important;
+        font-size: 11px !important;
         font-weight: 800 !important;
         color: #94a3b8 !important;
       }
       .idle-ready-pill {
-        font-size: 8.5px !important;
-        padding: 3px 8px !important;
+        font-size: 10px !important;
+        font-weight: 900 !important;
+        padding: 3.5px 10px !important;
       }
 
-      /* ── TAMPILAN AKTIF (RUNNING) DI TV: PADAT, MEWAH & JELAS DARI JAUH ── */
+      /* ── TAMPILAN AKTIF (RUNNING) DI TV: PADAT, FONT BESAR & TERBACA JELAS ── */
       .card-running-display {
         flex: 1 1 0% !important;
         min-height: 0 !important;
         flex-direction: column !important;
         justify-content: space-between !important;
-        gap: 6px !important;
-        /* Note: display flex/none dikontrol JS */
+        gap: 8px !important;
       }
 
-      /* 1. Layar Timer */
+      /* 1. Layar Timer (Besar, Bold, Tajam) */
       .timer-screen {
         flex: 1 1 0% !important;
         min-height: 0 !important;
-        padding: 8px 6px !important;
-        gap: 3px !important;
-        border-radius: 10px !important;
-        background: rgba(0, 0, 0, 0.55) !important;
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        padding: 12px 8px !important;
+        gap: 4px !important;
+        border-radius: 12px !important;
+        background: rgba(0, 0, 0, 0.6) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
         justify-content: center !important;
       }
       .timer-label {
-        font-size: 9px !important;
-        letter-spacing: 1.5px !important;
-        font-weight: 800 !important;
+        font-size: 10px !important;
+        letter-spacing: 2px !important;
+        font-weight: 900 !important;
         color: var(--text-muted) !important;
+        text-transform: uppercase !important;
       }
       .timer-digits {
-        font-size: 30px !important;
+        font-size: 38px !important;
         font-weight: 900 !important;
         letter-spacing: -0.5px !important;
-        line-height: 1.1 !important;
+        line-height: 1.05 !important;
         white-space: nowrap !important;
         font-variant-numeric: tabular-nums !important;
       }
 
-      /* 2. Layar Billing & Status Bayar (Status di Kanan Harga) */
+      /* 2. Layar Billing & Status Bayar (Kiri: Harga Besar, Kanan: Status) */
       .billing-screen {
         flex: 0 0 auto !important;
-        padding: 8px 10px !important;
+        padding: 8px 12px !important;
         gap: 8px !important;
-        border-radius: 10px !important;
-        background: rgba(255, 255, 255, 0.04) !important;
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 12px !important;
+        background: rgba(255, 255, 255, 0.045) !important;
+        border: 1px solid rgba(255, 255, 255, 0.09) !important;
         display: flex !important;
         flex-direction: row !important;
         align-items: center !important;
@@ -767,7 +772,7 @@
         flex: 1 1 auto !important;
       }
       .billing-label {
-        font-size: 8.5px !important;
+        font-size: 9px !important;
         letter-spacing: 1px !important;
         font-weight: 800 !important;
         color: var(--text-muted) !important;
@@ -775,7 +780,7 @@
         text-transform: uppercase !important;
       }
       .billing-amount {
-        font-size: 18px !important;
+        font-size: 22px !important;
         font-weight: 900 !important;
         line-height: 1.1 !important;
         letter-spacing: -0.5px !important;
@@ -788,10 +793,10 @@
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
-        padding: 5px 10px !important;
-        font-size: 9.5px !important;
+        padding: 5px 12px !important;
+        font-size: 10.5px !important;
         font-weight: 900 !important;
-        letter-spacing: 0.5px !important;
+        letter-spacing: 0.6px !important;
         border-radius: 20px !important;
         line-height: 1.1 !important;
         white-space: nowrap !important;
@@ -799,38 +804,39 @@
 
       /* 3. Badge Tambahan (Jika Ada Stik/Pemain Tambahan) */
       .card-extra-badge {
-        font-size: 8.5px !important;
-        padding: 3px 8px !important;
-        border-radius: 6px !important;
+        font-size: 9.5px !important;
+        font-weight: 800 !important;
+        padding: 4px 10px !important;
+        border-radius: 8px !important;
       }
 
-      /* 4. Jam Mulai & Jam Selesai */
+      /* 4. Jam Mulai & Jam Selesai (Besar & Kontras Jelas) */
       .meta-details {
         flex: 0 0 auto !important;
-        padding-top: 3px !important;
-        border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+        padding-top: 5px !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
         display: flex !important;
         justify-content: space-between !important;
         align-items: center !important;
-        gap: 6px !important;
+        gap: 8px !important;
       }
       .meta-item {
         display: flex !important;
         flex-direction: row !important;
         align-items: baseline !important;
-        gap: 4px !important;
+        gap: 5px !important;
       }
       .meta-item span:first-child {
-        font-size: 7.5px !important;
+        font-size: 8.5px !important;
         font-weight: 800 !important;
         letter-spacing: 0.5px !important;
         color: var(--text-muted) !important;
       }
       .meta-item span:last-child {
-        font-size: 10px !important;
-        font-weight: 800 !important;
+        font-size: 12px !important;
+        font-weight: 900 !important;
         font-family: var(--font-mono) !important;
-        color: #f1f5f9 !important;
+        color: #ffffff !important;
       }
 
       /* Footer TV: Minimalis */
