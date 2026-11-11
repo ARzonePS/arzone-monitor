@@ -1476,9 +1476,8 @@
       }
     }
 
-    // ── 3.5 TIME SYNC ENGINE (ZERO-DRIFT DENGAN JAM HP KASIR / SERVER) ──
+    // ── 3.5 TIME SYNC ENGINE (FIREBASE SERVER TIME ZERO-DRIFT) ──
     let firebaseServerOffset = 0;
-    let phoneClockOffset = null;
 
     try {
       firebase.database().ref('.info/serverTimeOffset').on('value', function(snap) {
@@ -1487,9 +1486,6 @@
     } catch(e) {}
 
     function getEffectiveNow() {
-      if (phoneClockOffset !== null) {
-        return Date.now() - phoneClockOffset;
-      }
       return Date.now() + firebaseServerOffset;
     }
 
@@ -1877,14 +1873,6 @@
     // ── 9. APLIKASI SNAPSHOT DENGAN CHANGE DETECTION ──
     function applySnapshot(payload, source = "unknown") {
       if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return;
-
-      // Sinkronisasi mutlak dengan jam HP Kasir
-      if (payload._sync_meta && payload._sync_meta.device_time_ms) {
-        const deviceMs = Number(payload._sync_meta.device_time_ms);
-        if (!isNaN(deviceMs) && deviceMs > 0) {
-          phoneClockOffset = Date.now() - deviceMs;
-        }
-      }
 
       syncStationsFromPayload(payload);
 
