@@ -636,36 +636,36 @@
         overflow: hidden !important;
       }
 
-      /* Identity Atas Kartu (Besar & Mantap) */
+      /* Identity Atas Kartu (Super Besar & Tajam dari Ujung Ruangan) */
       .card-top {
         flex: 0 0 auto !important;
-        gap: 8px !important;
+        gap: 10px !important;
       }
       .station-number-badge {
-        width: 38px !important;
-        height: 38px !important;
-        font-size: 19px !important;
+        width: 42px !important;
+        height: 42px !important;
+        font-size: 22px !important;
         font-weight: 900 !important;
-        border-radius: 9px !important;
-        flex: 0 0 38px !important;
+        border-radius: 10px !important;
+        flex: 0 0 42px !important;
       }
       .station-name-wrap h3 {
-        font-size: 19px !important;
+        font-size: 22px !important;
         font-weight: 900 !important;
         letter-spacing: 0.5px !important;
       }
       .station-sub-badge {
-        font-size: 9px !important;
+        font-size: 9.5px !important;
         letter-spacing: 1.2px !important;
       }
       .session-mode-badge {
-        font-size: 10.5px !important;
+        font-size: 11px !important;
         padding: 4px 12px !important;
         font-weight: 900 !important;
         border-radius: 8px !important;
       }
 
-      /* ── TAMPILAN STANDBY (IDLE) DI TV: SANGAT BESAR & GLOWING DARI UJUNG RUANGAN ── */
+      /* ── TAMPILAN STANDBY (IDLE) DI TV: SANGAT BESAR & GLOWING MERAH ELEGAN ── */
       .card-idle-display {
         flex: 1 1 0% !important;
         min-height: 0 !important;
@@ -673,7 +673,7 @@
         gap: 12px !important;
         border-radius: 14px !important;
         background: rgba(0, 0, 0, 0.45) !important;
-        border: 1px dashed rgba(0, 255, 136, 0.35) !important;
+        border: 1.5px dashed rgba(255, 42, 95, 0.45) !important;
       }
       .idle-ps-symbols {
         font-size: 32px !important;
@@ -683,32 +683,35 @@
         font-size: 36px !important;
         font-weight: 900 !important;
         letter-spacing: 4px !important;
-        color: var(--neon-green) !important;
-        text-shadow: 0 0 25px rgba(0, 255, 136, 0.6) !important;
+        color: var(--neon-red) !important;
+        text-shadow: 0 0 25px rgba(255, 42, 95, 0.6) !important;
         line-height: 1 !important;
       }
       .idle-desc {
         font-size: 13px !important;
         font-weight: 800 !important;
-        color: var(--text-muted) !important;
+        color: #fda4af !important;
         letter-spacing: 0.8px !important;
       }
       .card-idle-bottom {
         flex: 0 0 auto !important;
         padding: 7px 12px !important;
         border-radius: 10px !important;
-        background: rgba(0, 255, 136, 0.08) !important;
-        border: 1px solid rgba(0, 255, 136, 0.25) !important;
+        background: rgba(255, 42, 95, 0.08) !important;
+        border: 1px solid rgba(255, 42, 95, 0.25) !important;
       }
       .idle-bottom-txt {
         font-size: 12px !important;
         font-weight: 800 !important;
-        color: #94a3b8 !important;
+        color: #fca5a5 !important;
       }
       .idle-ready-pill {
         font-size: 11px !important;
         font-weight: 900 !important;
         padding: 4px 12px !important;
+        background: rgba(255, 42, 95, 0.18) !important;
+        color: var(--neon-red) !important;
+        border: 1px solid rgba(255, 42, 95, 0.4) !important;
       }
 
       /* ── TAMPILAN AKTIF (RUNNING) DI TV: TIMER 46PX BESAR & SANGAT TAJAM ── */
@@ -884,8 +887,16 @@
       animation: alertBlink 1s infinite;
     }
     .station-card.idle::before {
-      background: var(--neon-green);
+      background: var(--neon-red);
       opacity: 0.7;
+    }
+    .station-card.idle {
+      border-color: rgba(255, 42, 95, 0.25);
+    }
+    .station-card.idle .station-number-badge {
+      border-color: rgba(255, 42, 95, 0.35);
+      background: rgba(255, 42, 95, 0.08);
+      color: #fda4af;
     }
 
     @keyframes alertBlink {
@@ -977,9 +988,9 @@
       white-space: nowrap;
     }
     .mode-idle {
-      background: rgba(0, 255, 136, 0.12);
-      color: var(--neon-green);
-      border: 1px solid rgba(0, 255, 136, 0.35);
+      background: rgba(255, 42, 95, 0.14);
+      color: var(--neon-red);
+      border: 1px solid rgba(255, 42, 95, 0.35);
     }
     .mode-bebas {
       background: rgba(0, 210, 255, 0.12);
@@ -1003,7 +1014,7 @@
        ================================================================ */
     .card-idle-display {
       background: rgba(0, 0, 0, 0.4);
-      border: 1px dashed rgba(255, 255, 255, 0.1);
+      border: 1px dashed rgba(255, 42, 95, 0.35);
       border-radius: 18px;
       padding: 30px 20px;
       display: flex;
@@ -1030,14 +1041,14 @@
       font-size: 24px;
       font-weight: 900;
       letter-spacing: 3px;
-      color: var(--neon-green);
-      text-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+      color: var(--neon-red);
+      text-shadow: 0 0 20px rgba(255, 42, 95, 0.4);
     }
 
     .idle-desc {
       font-size: 13px;
       font-weight: 700;
-      color: var(--text-muted);
+      color: #fda4af;
       letter-spacing: 1px;
     }
 
@@ -1046,14 +1057,14 @@
       align-items: center;
       justify-content: space-between;
       padding: 14px 18px;
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(255, 42, 95, 0.05);
+      border: 1px solid rgba(255, 42, 95, 0.15);
       border-radius: 14px;
     }
     .idle-bottom-txt {
       font-size: 12px;
       font-weight: 800;
-      color: var(--text-muted);
+      color: #fda4af;
       letter-spacing: 1px;
     }
     .idle-ready-pill {
@@ -1062,9 +1073,9 @@
       letter-spacing: 1px;
       padding: 5px 14px;
       border-radius: 20px;
-      background: rgba(0, 255, 136, 0.1);
-      color: var(--neon-green);
-      border: 1px solid rgba(0, 255, 136, 0.25);
+      background: rgba(255, 42, 95, 0.15);
+      color: var(--neon-red);
+      border: 1px solid rgba(255, 42, 95, 0.35);
     }
 
     /* ================================================================
