@@ -1998,7 +1998,10 @@
           dom.modeBadge.className = 'session-mode-badge mode-paket';
           let label = 'PAKET MAIN';
           if (next.paket_nama && next.paket_nama.toUpperCase() !== 'PAKET' && next.paket_nama.toUpperCase() !== 'PAKET MAIN') {
-            label = next.paket_nama.toUpperCase();
+            label = next.paket_nama.toUpperCase().trim();
+            // Bersihkan sisa menit toleransi (1-9 menit) dari penamaan paket jika ada
+            label = label.replace(/PAKET\s+(\d+)\s+JAM\s+0?[1-9]\s*(MENIT|MNT)/i, 'PAKET $1 JAM');
+            label = label.replace(/\s*\(\+0?[1-9]\s*m\)/i, '');
           } else if (next.start_time_iso && next.end_time_iso) {
             const sT = parseIso(next.start_time_iso);
             const eT = parseIso(next.end_time_iso);
@@ -2006,7 +2009,14 @@
               const durM = Math.round((eT - sT) / 60000);
               const j = Math.floor(durM / 60);
               const m = durM % 60;
-              label = j > 0 && m > 0 ? `PAKET ${j} JAM ${m} MNT` : (j > 0 ? `PAKET ${j} JAM` : `PAKET ${durM} MENIT`);
+              // Jika sisa menit < 10 (toleransi / grace period), abaikan sisa menitnya
+              if (j > 0 && m < 10) {
+                label = `PAKET ${j} JAM`;
+              } else if (j > 0 && m >= 10) {
+                label = `PAKET ${j} JAM ${m} MNT`;
+              } else {
+                label = `PAKET ${durM} MENIT`;
+              }
             }
           }
           dom.modeBadge.textContent = label;
